@@ -27,18 +27,18 @@ SOURCES := $(sort $(shell $(FIND) $(SRCDIR) -name *.cpp))
 LIBYAML_SOURCES := $(sort $(shell $(FIND) libyaml/$(SRCDIR) -name *.c))
 
 
-.PHONY : clean all release git
+.PHONY : clean all git
 
 
 all : $(subst $(SRCDIR),$(OBJDIR)libyaml/,$(subst .c,$(OBJ),$(subst libyaml/,,$(LIBYAML_SOURCES)))) $(subst $(SRCDIR),$(OBJDIR),$(subst .cpp,$(OBJ),$(SOURCES)))
 	$(CXX) $(CPPAR) -shared -o$(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(subst $(SRCDIR),$(OBJDIR),$^)
-	$(STRIP) $(STRIPAR) $(shell $(FIND) $(PREDLL) -name *$(DLL)) $^
+	$(STRIP) $(STRIPAR) $(shell $(FIND) $(PREDLL) -name *$(DLL))
 
 clean :
-	rm -rf $(OUTDIR) libyaml/$(OUTDIR)
+	rm -rf $(OUTDIR)
 
 git :
-	git submodule    update  --recursive --init --remote
+	git submodule update --recursive --init --remote
 
 
 $(OBJDIR)%$(OBJ) : $(SRCDIR)%.cpp

@@ -45,6 +45,7 @@ endif
 OBJ := .o
 ARCH := .a
 CAR := -Os -pedantic -pipe -fomit-frame-pointer -isystemlibyaml/include $(PIC)
+# Don't define YAML_DECLARE_STATIC here to cause linker errors from compilation units not using one (presumably not #defined in the header)
 CPPAR := $(CAR) -std=c++14 -Wall -Wextra
 CCAR := $(CAR) -std=c11 -DYAML_DECLARE_STATIC -DYAML_VERSION_STRING=\"0.1.6\" -DYAML_VERSION_MAJOR=0 -DYAML_VERSION_MINOR=1 -DYAML_VERSION_PATCH=6
 STRIP := strip
