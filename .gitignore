@@ -29,6 +29,12 @@
 +
 +# Miscellaneous
 +.DS_Store
-out/*
 *.s*-toks
 *.s*-workspace
+out/*
+# Test dir
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
