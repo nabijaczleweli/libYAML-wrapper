@@ -32,7 +32,7 @@ LIBYAML_SOURCES := $(sort $(shell $(FIND) libyaml/$(SRCDIR) -name *.c))
 
 all : $(subst $(SRCDIR),$(OBJDIR)libyaml/,$(subst .c,$(OBJ),$(subst libyaml/,,$(LIBYAML_SOURCES)))) $(subst $(SRCDIR),$(OBJDIR),$(subst .cpp,$(OBJ),$(SOURCES)))
 	$(CXX) $(CХХAR) -shared -o$(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(subst $(SRCDIR),$(OBJDIR),$^)
-	$(STRIP) $(STRIPAR) $(shell $(FIND) $(PREDLL) -name *$(DLL))
+	$(STRIP) $(STRIPAR) $(shell $(FIND) $(OUTDIR) -name *$(DLL))
 
 test : all $(TSTDIR)test.cpp
 	$(CXX) $(CХХAR) -isystemsrc -o$(subst .cpp,$(EXE),$(filter-out all,$^)) -L$(OUTDIR) -llibyaml-wrapper $(filter-out all,$^)
@@ -41,7 +41,7 @@ test : all $(TSTDIR)test.cpp
 	@rm $(TSTDIR)/*$(DLL)
 
 clean :
-	rm -rf $(OUTDIR) $(TSTDIR)/*$(DLL)
+	rm -rf $(OUTDIR) $(TSTDIR)/*$(DLL) $(TSTDIR)/*$(EXE)
 
 git :
 	git submodule update --recursive --init --remote
