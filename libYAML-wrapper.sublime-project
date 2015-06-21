@@ -14,6 +14,18 @@
 			"path": "src"
 		},
 		{
+			"follow_symlinks": true,
+			"name": "Test files",
+			"path": "test",
+			"file_exclude_patterns": [
+				"*.exe",
+				"*.out",
+				"*.dll",
+				"*.so",
+				"*.dylib"
+			]
+		},
+		{
 			"file_include_patterns":
 			[
 				"*Makefile*"
