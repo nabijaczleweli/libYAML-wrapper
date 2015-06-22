@@ -40,7 +40,7 @@ namespace libyaml {
 			std::basic_string<unsigned char> input_buffer;
 			std::FILE * input_file;
 
-			void try_close_file();
+			void close_file();
 
 		public:
 			yaml_parser() noexcept;

@@ -22,6 +22,7 @@
 
 
 #include "yaml_parser.hpp"
+#include <ios>
 
 
 using namespace std;
@@ -33,11 +34,12 @@ yaml_parser::yaml_parser() noexcept : input_file(nullptr) {
 }
 
 yaml_parser::~yaml_parser() noexcept {
-	try_close_file();
+	close_file();
+	fill(input_buffer.begin(), input_buffer.end(), 0);
 	yaml_parser_delete(this);
 }
 
-void yaml_parser::try_close_file() {
+void yaml_parser::close_file() {
 	if(input_file) {
 		fclose(input_file);
 		input_file = nullptr;
@@ -45,8 +47,9 @@ void yaml_parser::try_close_file() {
 }
 
 void yaml_parser::read_from_file(const string & path) {
-	try_close_file();
-	input_file = fopen(path.c_str(), "r");
+	close_file();
+	if(!(input_file = fopen(path.c_str(), "r")))
+		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
 
 	yaml_parser_set_input_file(this, input_file);
 }
