@@ -27,6 +27,7 @@
 using namespace std;
 using namespace libyaml;
 
+using type_t              = yaml_handler::type_t;
 using stream_start_t      = yaml_handler::stream_start_t;
 using version_directive_t = yaml_handler::version_directive_t;
 using tag_directive_t     = yaml_handler::tag_directive_t;
@@ -40,6 +41,52 @@ yaml_handler::~yaml_handler() = default;
 
 unique_ptr<yaml_handler> yaml_handler::clone() const {
 	return make_unique<yaml_handler>(*this);
+}
+
+type_t yaml_handler::delete_token(yaml_token_t & token) {
+	const auto type = token.type;
+	yaml_token_delete(&token);
+	return type;
+}
+
+type_t yaml_handler::handle(yaml_token_t & token, bool handle_deletion) {
+	#define DEFAULT_CASE_ON_TOKEN(token_upper, token_lower) \
+		case YAML_##token_upper##_TOKEN : \
+			on_##token_lower##_token(); \
+			break;
+
+	#define ARG_CASE_ON_TOKEN(token_upper, token_lower) \
+		case YAML_##token_upper##_TOKEN : \
+			on_##token_lower##_token(token.data.token_lower); \
+			break;
+
+
+	switch(token.type) {
+		DEFAULT_CASE_ON_TOKEN(NO, no)
+		DEFAULT_CASE_ON_TOKEN(STREAM_END, stream_end)
+		DEFAULT_CASE_ON_TOKEN(DOCUMENT_START, document_start)
+		DEFAULT_CASE_ON_TOKEN(DOCUMENT_END, document_end)
+		DEFAULT_CASE_ON_TOKEN(BLOCK_SEQUENCE_START, block_sequence_start)
+		DEFAULT_CASE_ON_TOKEN(BLOCK_MAPPING_START, block_mapping_start)
+		DEFAULT_CASE_ON_TOKEN(BLOCK_END, block_end)
+		DEFAULT_CASE_ON_TOKEN(FLOW_SEQUENCE_START, flow_sequence_start)
+		DEFAULT_CASE_ON_TOKEN(FLOW_SEQUENCE_END, flow_sequence_end)
+		DEFAULT_CASE_ON_TOKEN(FLOW_MAPPING_START, flow_mapping_start)
+		DEFAULT_CASE_ON_TOKEN(FLOW_MAPPING_END, flow_mapping_end)
+		DEFAULT_CASE_ON_TOKEN(BLOCK_ENTRY, block_entry)
+		DEFAULT_CASE_ON_TOKEN(FLOW_ENTRY, flow_entry)
+		DEFAULT_CASE_ON_TOKEN(KEY, key)
+		DEFAULT_CASE_ON_TOKEN(VALUE, value)
+		ARG_CASE_ON_TOKEN(STREAM_START, stream_start)
+		ARG_CASE_ON_TOKEN(VERSION_DIRECTIVE, version_directive)
+		ARG_CASE_ON_TOKEN(TAG_DIRECTIVE, tag_directive)
+		ARG_CASE_ON_TOKEN(ALIAS, alias)
+		ARG_CASE_ON_TOKEN(ANCHOR, anchor)
+		ARG_CASE_ON_TOKEN(TAG, tag)
+		ARG_CASE_ON_TOKEN(SCALAR, scalar)
+	}
+
+	return handle_deletion ? delete_token(token) : token.type;
 }
 
 

@@ -44,6 +44,7 @@ namespace libyaml {
 		friend class yaml_reader;
 
 		public:
+			using type_t              = decltype(std::declval<yaml_token_t>().type);
 			using stream_start_t      = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().stream_start);
 			using version_directive_t = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().version_directive);
 			using tag_directive_t     = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().tag_directive);
@@ -51,6 +52,9 @@ namespace libyaml {
 			using anchor_t            = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().anchor);
 			using tag_t               = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().tag);
 			using scalar_t            = decltype(std::declval<decltype(std::declval<yaml_token_t>().data)>().scalar);
+
+
+			static type_t delete_token(yaml_token_t & token);
 
 
 			std::function<void(                           )> do_on_no_token;
@@ -82,7 +86,20 @@ namespace libyaml {
 			inline yaml_handler(yaml_handler &&);
 			virtual ~yaml_handler();
 
+
+			/**
+			 * Needed for collections and abstract classes
+			 * @return Generalized std::unique_ptr to a copy of the most derived class
+			 */
 			virtual std::unique_ptr<yaml_handler> clone() const;
+
+			/**
+			 * Handles/dispatches and optionally handles the deletion of a token
+			 * @param  token           Token to process
+			 * @param  handle_deletion Whether to "delete" the token after handling it
+			 * @return                 The type of token, before deletion
+			 */
+			type_t handle(yaml_token_t & token, bool handle_deletion = true);
 
 			virtual void on_no_token                  (                           );
 			virtual void on_stream_start_token        (const stream_start_t      &);
