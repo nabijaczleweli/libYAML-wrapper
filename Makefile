@@ -41,7 +41,7 @@ test : all $(TSTDIR)test.cpp
 	@rm $(TSTDIR)/*$(DLL)
 
 clean :
-	rm -rf $(OUTDIR) $(TSTDIR)/*$(DLL) $(TSTDIR)/*$(EXE)
+	rm -rf $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE)
 
 git :
 	git submodule update --recursive --init --remote

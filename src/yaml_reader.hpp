@@ -22,35 +22,55 @@
 
 
 #pragma once
-#ifndef YAML_PARSER_HPP
-#define YAML_PARSER_HPP
+#ifndef YAML_READER_HPP
+#define YAML_READER_HPP
 
 
 #define YAML_DECLARE_STATIC
 
-#include <yaml.h>
+#include "yaml_reader.hpp"
+#include "yaml_parser.hpp"
+#include "yaml_handler.hpp"
+#include "util/variadic.hpp"
+#include <initializer_list>
+#include <type_traits>
+#include <algorithm>
 #include <memory>
 #include <string>
-#include <cstdlib>
+#include <vector>
+#include <yaml.h>
 
 
 namespace libyaml {
-	/** A wrapper around yaml_parser_t, for OO-ness */
-	class yaml_parser : public yaml_parser_t {
+	class yaml_reader {
 		private:
-			std::basic_string<unsigned char> input_buffer;
-			std::shared_ptr<std::FILE> input_file;
-
-			void close_file();
+			yaml_parser parser;
 
 		public:
-			yaml_parser() noexcept;
-			~yaml_parser() noexcept;
+			std::vector<std::shared_ptr<yaml_handler>> handlers;
 
-			void read_from_file(const std::string & path);
-			void read_from_data(const std::string & data);
+			inline yaml_reader();
+			inline yaml_reader(const yaml_reader &);
+			inline yaml_reader(yaml_reader &&);
+			template<class... Args>
+			inline yaml_reader(Args &&... args);
+
+			void load(const std::string & from);
 	};
 }
 
 
-#endif  // YAML_PARSER_HPP
+inline libyaml::yaml_reader::yaml_reader() = default;
+inline libyaml::yaml_reader::yaml_reader(const yaml_reader &) = default;
+inline libyaml::yaml_reader::yaml_reader(yaml_reader &&) = default;
+
+template<class... Args>
+inline libyaml::yaml_reader::yaml_reader(Args &&... args) {
+	handlers.reserve(sizeof...(Args));
+	libyaml::util::over_all<Args...>::for_each([&](auto && val) {
+		handlers.emplace_back(val.clone());
+	}, std::forward<Args>(args)...);
+}
+
+
+#endif // YAML_READER_HPP

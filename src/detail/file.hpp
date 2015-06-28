@@ -21,33 +21,22 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "yaml_parser.hpp"
-#include "detail/file.hpp"
-#include <ios>
+#pragma once
+#ifndef DETAIL_FILE_HPP
+#define DETAIL_FILE_HPP
 
 
-using namespace std;
-using namespace libyaml;
+#include <type_traits>
+#include <cstdio>
 
 
-yaml_parser::yaml_parser() noexcept {
-	yaml_parser_initialize(this);
+namespace libyaml {
+	namespace detail {
+		struct file_deleter {
+			void operator()(std::FILE * file) const noexcept;
+		};
+	}
 }
 
-yaml_parser::~yaml_parser() noexcept {
-	fill(input_buffer.begin(), input_buffer.end(), 0);
-	yaml_parser_delete(this);
-}
 
-void yaml_parser::read_from_file(const string & path) {
-	input_file.reset(fopen(path.c_str(), "r"), detail::file_deleter());
-	if(!input_file)
-		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
-
-	yaml_parser_set_input_file(this, input_file.get());
-}
-
-void yaml_parser::read_from_data(const string & data) {
-	input_buffer.assign(data.begin(), data.end());
-	yaml_parser_set_input_string(this, input_buffer.c_str(), input_buffer.size());
-}
+#endif  // DETAIL_FILE_HPP

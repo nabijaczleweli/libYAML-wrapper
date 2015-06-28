@@ -21,33 +21,18 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "yaml_parser.hpp"
-#include "detail/file.hpp"
-#include <ios>
+#include "yaml_reader.hpp"
+#include "util/file.hpp"
 
 
 using namespace std;
 using namespace libyaml;
+using namespace libyaml::util;
 
 
-yaml_parser::yaml_parser() noexcept {
-	yaml_parser_initialize(this);
-}
-
-yaml_parser::~yaml_parser() noexcept {
-	fill(input_buffer.begin(), input_buffer.end(), 0);
-	yaml_parser_delete(this);
-}
-
-void yaml_parser::read_from_file(const string & path) {
-	input_file.reset(fopen(path.c_str(), "r"), detail::file_deleter());
-	if(!input_file)
-		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
-
-	yaml_parser_set_input_file(this, input_file.get());
-}
-
-void yaml_parser::read_from_data(const string & data) {
-	input_buffer.assign(data.begin(), data.end());
-	yaml_parser_set_input_string(this, input_buffer.c_str(), input_buffer.size());
+void yaml_reader::load(const string & from) {
+	if(exists(from))  // TODO: Maybe do a regex instead of exists()?
+		parser.read_from_file(from);
+	else
+		parser.read_from_data(from);
 }

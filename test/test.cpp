@@ -21,19 +21,18 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include <yaml_parser.hpp>
-#include <map>
-#include <vector>
+#define private public  // Hack into yaml_reader::parser
+#include <yaml_reader.hpp>
+#undef private
+#include <experimental/string_view>
 #include <iostream>
-#include <memory>
-#include <sstream>
+#include <vector>
+#include <map>
 
 
-using namespace libyaml;
 using namespace std;
-
-
-static const string toindent("  ");
+using namespace std::experimental;
+using namespace libyaml;
 
 
 static string operator*(const string & str, unsigned int amt) {
@@ -45,125 +44,113 @@ static string operator*(const string & str, unsigned int amt) {
 }
 
 
-int main()  {
-	yaml_parser parser;
-	parser.read_from_file("test.yaml");
-	auto token = make_shared<yaml_token_t>();
-	decltype(token->type) type;
+class priniting_handler : public yaml_handler {
+	public:
+		using yaml_handler::yaml_handler;
 
-	unsigned int indent = 0;
+		priniting_handler() {
+			static const constexpr auto defprint = [](auto str) {
+				cout << str << '\n';
+			};
 
-	do {
-		yaml_parser_scan(&parser, token.get());
-
-		switch(token->type) {
-			case YAML_NO_TOKEN :
-				cout << toindent * indent << "YAML_NO_TOKEN? Curious. Curious, indeed.";
-				break;
-			case YAML_STREAM_START_TOKEN :
-				cout << toindent * indent << "YAML_STREAM_START_TOKEN w/ ";
-				switch(token->data.stream_start.encoding) {
-					case YAML_ANY_ENCODING :
-						cout << "YAML_ANY_ENCODING (the parser chooses the encoding)";
-						break;
-					case YAML_UTF8_ENCODING :
-						cout << "YAML_UTF8_ENCODING (default UTF-8 encoding)";
-						break;
-					case YAML_UTF16LE_ENCODING :
-						cout << "YAML_UTF16LE_ENCODING (UTF-16-LE encoding with BOM)";
-						break;
-					case YAML_UTF16BE_ENCODING :
-						cout << "YAML_UTF16BE_ENCODING (UTF-16-BE encoding with BOM)";
-						break;
-				}
-				++indent;
-				break;
-			case YAML_STREAM_END_TOKEN :
-				indent = 0;
-				cout << toindent * indent << "YAML_STREAM_END_TOKEN";
-				break;
-			case YAML_VERSION_DIRECTIVE_TOKEN :
-				cout << toindent * indent << "YAML_VERSION_DIRECTIVE_TOKEN @ " << token->data.version_directive.major << '.' << token->data.version_directive.minor;
-				break;
-			case YAML_TAG_DIRECTIVE_TOKEN :
-				cout << toindent * indent << "YAML_TAG_DIRECTIVE_TOKEN prefixed by " << token->data.tag_directive.prefix << " handled by " <<
-				                                                                        token->data.tag_directive.handle;
-				break;
-			case YAML_DOCUMENT_START_TOKEN :
-				cout << toindent * indent++ << "YAML_DOCUMENT_START_TOKEN";
-				break;
-			case YAML_DOCUMENT_END_TOKEN :
-				cout << toindent * --indent << "YAML_DOCUMENT_END_TOKEN";
-				break;
-			case YAML_BLOCK_SEQUENCE_START_TOKEN :
-				cout << toindent * indent++ << "YAML_BLOCK_SEQUENCE_START_TOKEN";
-				break;
-			case YAML_BLOCK_MAPPING_START_TOKEN :
-				cout << toindent * --indent << "YAML_BLOCK_MAPPING_START_TOKEN (BLOCK-SEQUENCE-END)";
-				break;
-			case YAML_BLOCK_END_TOKEN :
-				cout << toindent * --indent << "YAML_BLOCK_END_TOKEN";
-				break;
-			case YAML_FLOW_SEQUENCE_START_TOKEN :
-				cout << toindent * indent++ << "YAML_FLOW_SEQUENCE_START_TOKEN";
-				break;
-			case YAML_FLOW_SEQUENCE_END_TOKEN :
-				cout << toindent * --indent << "YAML_FLOW_SEQUENCE_END_TOKEN";
-				break;
-			case YAML_FLOW_MAPPING_START_TOKEN :
-				cout << toindent * indent++ << "YAML_FLOW_MAPPING_START_TOKEN";
-				break;
-			case YAML_FLOW_MAPPING_END_TOKEN :
-				cout << toindent * --indent << "YAML_FLOW_MAPPING_END_TOKEN";
-				break;
-			case YAML_BLOCK_ENTRY_TOKEN :
-				cout << toindent * indent++ << "YAML_BLOCK_ENTRY_TOKEN";
-				break;
-			case YAML_FLOW_ENTRY_TOKEN :
-				cout << toindent * indent++ << "YAML_FLOW_ENTRY_TOKEN";
-				break;
-			case YAML_KEY_TOKEN :
-				cout << toindent * indent << "YAML_KEY_TOKEN";
-				break;
-			case YAML_VALUE_TOKEN :
-				cout << toindent * indent << "YAML_VALUE_TOKEN";
-				break;
-			case YAML_ALIAS_TOKEN :
-				cout << toindent * indent << "YAML_ALIAS_TOKEN -> " << token->data.alias.value;
-				break;
-			case YAML_ANCHOR_TOKEN :
-				cout << toindent * indent << "YAML_ANCHOR_TOKEN -> " << token->data.anchor.value;
-				break;
-			case YAML_TAG_TOKEN :
-				cout << toindent * indent << "YAML_TAG_TOKEN #" << token->data.tag.handle << " + " << token->data.tag.suffix;
-				break;
-			case YAML_SCALAR_TOKEN :
-				cout << toindent * indent << "YAML_SCALAR_TOKEN = \"" << token->data.scalar.value << "\".size() == " << token->data.scalar.length << " as ";
-				switch(token->data.scalar.style) {
-					case YAML_ANY_SCALAR_STYLE :
-						cout << "YAML_ANY_SCALAR_STYLE (the emitter chooses the style)";
-						break;
-					case YAML_PLAIN_SCALAR_STYLE :
-						cout << "YAML_PLAIN_SCALAR_STYLE (plain scalar style)";
-						break;
-					case YAML_SINGLE_QUOTED_SCALAR_STYLE :
-						cout << "YAML_SINGLE_QUOTED_SCALAR_STYLE (single-quoted scalar style)";
-						break;
-					case YAML_DOUBLE_QUOTED_SCALAR_STYLE :
-						cout << "YAML_DOUBLE_QUOTED_SCALAR_STYLE (double-quoted scalar style)";
-						break;
-					case YAML_LITERAL_SCALAR_STYLE :
-						cout << "YAML_LITERAL_SCALAR_STYLE (literal scalar style)";
-						break;
-					case YAML_FOLDED_SCALAR_STYLE :
-						cout << "YAML_FOLDED_SCALAR_STYLE (folded scalar style)";
-						break;
-				}
-				break;
+			do_on_no_token = bind(defprint, "No token");
+			do_on_stream_end_token = bind(defprint, "Stream end");
+			do_on_document_start_token = bind(defprint, "Document start");
+			do_on_document_end_token = bind(defprint, "Document end");
+			do_on_block_sequence_start_token = bind(defprint, "Block sequence start");
+			do_on_block_mapping_start_token = bind(defprint, "Block mapping start");
+			do_on_block_end_token = bind(defprint, "Block end");
+			do_on_flow_sequence_start_token = bind(defprint, "Flow sequence start");
+			do_on_flow_sequence_end_token = bind(defprint, "Flow sequence end");
+			do_on_flow_mapping_start_token = bind(defprint, "Flow mapping start");
+			do_on_flow_mapping_end_token = bind(defprint, "Flow mapping end");
+			do_on_block_entry_token = bind(defprint, "Block entry");
+			do_on_flow_entry_token = bind(defprint, "Block entry");
+			do_on_key_token = bind(defprint, "Key");
+			do_on_value_token = bind(defprint, "Value");
 		}
-		cout << '\n';
 
-		type = token->type;
-		yaml_token_delete(token.get());
-	} while(type != YAML_STREAM_END_TOKEN && type != YAML_NO_TOKEN);
+		virtual unique_ptr<yaml_handler> clone() const {
+			return make_unique<priniting_handler>(*this);
+		}
+
+		virtual void on_stream_start_token(const stream_start_t & stream_start) override {
+			static const map<yaml_encoding_t, string_view> encodings({
+				{YAML_ANY_ENCODING, "whatever"},
+				{YAML_UTF8_ENCODING, "UTF-8"},
+				{YAML_UTF16LE_ENCODING, "UTF-16-LE with BOM"},
+				{YAML_UTF16BE_ENCODING, "UTF-16-BE with BOM"}
+			});
+
+			cout << "Start stream encoded as " << encodings.at(stream_start.encoding) << '\n';
+		}
+
+		virtual void on_version_directive_token(const version_directive_t & version_directive) override {
+			cout << "Version: " << version_directive.major << '.' << version_directive.minor << '\n';
+		}
+
+		virtual void on_tag_directive_token(const tag_directive_t & tag_directive) override {
+			cout << tag_directive.prefix << " tag => " << tag_directive.handle << '\n';
+		}
+
+		virtual void on_alias_token(const alias_t & alias) override {
+			cout << "Aliased to " << alias.value << '\n';
+		}
+
+		virtual void on_anchor_token(const anchor_t & anchor) override {
+			cout << "Anchor " << anchor.value << '\n';
+		}
+
+		virtual void on_tag_token(const tag_t & tag) override {
+			cout << "Tag " << tag.suffix << " => " << tag.handle << '\n';
+		}
+
+		virtual void on_scalar_token(const scalar_t & scalar) override {
+			static const map<yaml_scalar_style_t, string_view> styles({
+				{YAML_ANY_SCALAR_STYLE, "however"},
+				{YAML_PLAIN_SCALAR_STYLE, "plainly"},
+				{YAML_SINGLE_QUOTED_SCALAR_STYLE, "single-quotedly"},
+				{YAML_DOUBLE_QUOTED_SCALAR_STYLE, "double-quotedly"},
+				{YAML_LITERAL_SCALAR_STYLE, "literally"},
+				{YAML_FOLDED_SCALAR_STYLE, "via fold"}
+			});
+
+			cout << "Scalar \"" << scalar.value << "\" & size() == " << scalar.length << " styled " << styles.at(scalar.style) << '\n';
+		}
+};
+
+
+int main() {
+	string curkey;
+	bool await_key = false;
+	map<string, vector<string>> themap;
+
+	yaml_handler handler;
+	handler.do_on_scalar_token = [&](const auto & scalar) {
+		string value(reinterpret_cast<char *>(scalar.value), scalar.length);
+		if(await_key) {
+			curkey = move(value);
+			themap.insert({curkey, {}});
+			await_key = false;
+		} else
+			themap[curkey].emplace_back(move(value));
+	};
+	handler.do_on_key_token = [&]() {
+		await_key = true;
+	};
+	yaml_reader reader({handler, priniting_handler()});
+	reader.load("test.yaml");
+
+	yaml_token_t token;
+	do
+		yaml_parser_scan(&reader.parser, &token);
+	while((for_each(reader.handlers.begin(), reader.handlers.end(), bind(&yaml_handler::handle, placeholders::_1, token, false)), yaml_handler::delete_token(token)) != YAML_STREAM_END_TOKEN);
+
+	cout << '\n';
+	for(const auto & kv : themap) {
+		const string spacer = " "s * (kv.first.size() + 1);
+		cout << kv.first << ":\n";
+		for(const auto & v : kv.second)
+			cout << spacer << v << '\n';
+	}
 }

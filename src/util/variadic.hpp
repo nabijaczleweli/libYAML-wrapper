@@ -21,33 +21,54 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "yaml_parser.hpp"
-#include "detail/file.hpp"
-#include <ios>
+#ifndef VARIADIC_HPP
+#define VARIADIC_HPP
 
 
-using namespace std;
-using namespace libyaml;
+#include <utility>
 
 
-yaml_parser::yaml_parser() noexcept {
-	yaml_parser_initialize(this);
+namespace libyaml {
+	namespace util {
+		template<class T, class... TT>
+		struct over_all {
+			using next = over_all<TT...>;
+			enum {
+				size = 1 + next::size
+			};
+
+			template<class C>
+			inline constexpr static C for_each(C cbk, T && tval, TT &&... ttval){
+				cbk(std::forward<T>(tval));
+				next::for_each(cbk, std::forward<TT>(ttval)...);
+				return cbk;
+			}
+
+			template<class C>
+			inline constexpr C operator()(C cbk, T && tval, TT &&... ttval) const {
+				return for_each(cbk, std::forward<T>(tval), std::forward<TT>(ttval)...);
+			}
+		};
+
+		template<class T>
+		struct over_all<T> {
+			enum {
+				size = 1
+			};
+
+			template<class C>
+			inline constexpr static C for_each(C cbk, T && tval) {
+				cbk(std::forward<T>(tval));
+				return cbk;
+			}
+
+			template<class C>
+			inline constexpr C operator()(C cbk, T && tval) const {
+				return for_each(cbk, std::forward<T>(tval));
+			}
+		};
+	}
 }
 
-yaml_parser::~yaml_parser() noexcept {
-	fill(input_buffer.begin(), input_buffer.end(), 0);
-	yaml_parser_delete(this);
-}
 
-void yaml_parser::read_from_file(const string & path) {
-	input_file.reset(fopen(path.c_str(), "r"), detail::file_deleter());
-	if(!input_file)
-		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
-
-	yaml_parser_set_input_file(this, input_file.get());
-}
-
-void yaml_parser::read_from_data(const string & data) {
-	input_buffer.assign(data.begin(), data.end());
-	yaml_parser_set_input_string(this, input_buffer.c_str(), input_buffer.size());
-}
+#endif  // VARIADIC_HPP
