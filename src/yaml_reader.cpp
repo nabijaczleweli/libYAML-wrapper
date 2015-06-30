@@ -23,16 +23,49 @@
 
 #include "yaml_reader.hpp"
 #include "util/file.hpp"
+#include <algorithm>
+#include <exception>
 
 
 using namespace std;
+using namespace std::experimental;
 using namespace libyaml;
 using namespace libyaml::util;
 
 
-void yaml_reader::load(const string & from) {
-	if(exists(from))  // TODO: Maybe do a regex instead of exists()?
+optional<unsigned int> yaml_reader::consecutive_notoken_threshold = 10;
+
+
+void yaml_reader::read(const string & from) {
+	if(exists(from))
 		parser.read_from_file(from);
 	else
 		parser.read_from_data(from);
+
+
+	auto notokens_tolerated   = consecutive_notoken_threshold ? consecutive_notoken_threshold.value() : 0u;
+	std::exception_ptr thrown = nullptr;
+	yaml_token_t token;
+	do {
+		yaml_parser_scan(&parser, &token);
+		auto type = token.type;
+
+		for_each(handlers.begin(), handlers.end(), [&](auto & handler) {
+			try {
+				type = handler->handle(token, false);
+			} catch(...) {
+				thrown = current_exception();
+			}
+		});
+
+		if(consecutive_notoken_threshold) {
+			if(token.type == YAML_NO_TOKEN)
+				--notokens_tolerated;
+			else
+				notokens_tolerated = consecutive_notoken_threshold.value();
+		}
+	} while(yaml_handler::delete_token(token) != YAML_STREAM_END_TOKEN && !thrown && (!consecutive_notoken_threshold || notokens_tolerated));
+
+	if(thrown)
+		rethrow_exception(thrown);
 }

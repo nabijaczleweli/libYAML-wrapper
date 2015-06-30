@@ -32,9 +32,7 @@
 #include "yaml_parser.hpp"
 #include "yaml_handler.hpp"
 #include "util/variadic.hpp"
-#include <initializer_list>
-#include <type_traits>
-#include <algorithm>
+#include <experimental/optional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,19 +41,23 @@
 
 namespace libyaml {
 	class yaml_reader {
-		private:
-			yaml_parser parser;
+	private:
+		yaml_parser parser;
 
-		public:
-			std::vector<std::shared_ptr<yaml_handler>> handlers;
+	public:
+		static std::experimental::optional<unsigned int> consecutive_notoken_threshold;
 
-			inline yaml_reader();
-			inline yaml_reader(const yaml_reader &);
-			inline yaml_reader(yaml_reader &&);
-			template<class... Args>
-			inline yaml_reader(Args &&... args);
+		std::vector<std::shared_ptr<yaml_handler>> handlers;
 
-			void load(const std::string & from);
+		inline yaml_reader();
+		inline yaml_reader(const yaml_reader &);
+		inline yaml_reader(yaml_reader &&);
+		template <class... Args>
+		inline yaml_reader(Args &&... args);
+		template <class S, class... Args>
+		inline yaml_reader(const S & str, Args &&... args);
+
+		void read(const std::string & from);
 	};
 }
 
@@ -64,13 +66,16 @@ inline libyaml::yaml_reader::yaml_reader() = default;
 inline libyaml::yaml_reader::yaml_reader(const yaml_reader &) = default;
 inline libyaml::yaml_reader::yaml_reader(yaml_reader &&) = default;
 
-template<class... Args>
+template <class... Args>
 inline libyaml::yaml_reader::yaml_reader(Args &&... args) {
 	handlers.reserve(sizeof...(Args));
-	libyaml::util::over_all<Args...>::for_each([&](auto && val) {
-		handlers.emplace_back(val.clone());
-	}, std::forward<Args>(args)...);
+	libyaml::util::over_all<Args...>::for_each([&](auto && val) { handlers.emplace_back(val.clone()); }, std::forward<Args>(args)...);
+}
+
+template <class S, class... Args>
+inline libyaml::yaml_reader::yaml_reader(const S & str, Args &&... args) : yaml_reader(std::forward<Args>(args)...) {
+	read(str);
 }
 
 
-#endif // YAML_READER_HPP
+#endif  // YAML_READER_HPP

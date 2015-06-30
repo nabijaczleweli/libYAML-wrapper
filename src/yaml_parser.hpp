@@ -37,18 +37,18 @@
 namespace libyaml {
 	/** A wrapper around yaml_parser_t, for OO-ness */
 	class yaml_parser : public yaml_parser_t {
-		private:
-			std::basic_string<unsigned char> input_buffer;
-			std::shared_ptr<std::FILE> input_file;
+	private:
+		std::basic_string<unsigned char> input_buffer;
+		std::shared_ptr<std::FILE> input_file;
 
-			void close_file();
+		void close_file();
 
-		public:
-			yaml_parser() noexcept;
-			~yaml_parser() noexcept;
+	public:
+		yaml_parser() noexcept;
+		~yaml_parser() noexcept;
 
-			void read_from_file(const std::string & path);
-			void read_from_data(const std::string & data);
+		void read_from_file(const std::string & path);
+		void read_from_data(const std::string & data);
 	};
 }
 

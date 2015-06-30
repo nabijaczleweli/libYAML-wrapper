@@ -50,15 +50,15 @@ type_t yaml_handler::delete_token(yaml_token_t & token) {
 }
 
 type_t yaml_handler::handle(yaml_token_t & token, bool handle_deletion) {
-	#define DEFAULT_CASE_ON_TOKEN(token_upper, token_lower) \
-		case YAML_##token_upper##_TOKEN : \
-			on_##token_lower##_token(); \
-			break;
+#define DEFAULT_CASE_ON_TOKEN(token_upper, token_lower) \
+	case YAML_##token_upper##_TOKEN:                      \
+		on_##token_lower##_token();                         \
+		break;
 
-	#define ARG_CASE_ON_TOKEN(token_upper, token_lower) \
-		case YAML_##token_upper##_TOKEN : \
-			on_##token_lower##_token(token.data.token_lower); \
-			break;
+#define ARG_CASE_ON_TOKEN(token_upper, token_lower)   \
+	case YAML_##token_upper##_TOKEN:                    \
+		on_##token_lower##_token(token.data.token_lower); \
+		break;
 
 
 	switch(token.type) {
@@ -90,16 +90,16 @@ type_t yaml_handler::handle(yaml_token_t & token, bool handle_deletion) {
 }
 
 
-#define DEFAULT_ON_TOKEN(which_token) \
+#define DEFAULT_ON_TOKEN(which_token)             \
 	void yaml_handler::on_##which_token##_token() { \
-		if(do_on_##which_token##_token) \
-			do_on_##which_token##_token(); \
+		if(do_on_##which_token##_token)               \
+			do_on_##which_token##_token();              \
 	}
 
-#define ARG_ON_TOKEN(which_token) \
+#define ARG_ON_TOKEN(which_token)                                                    \
 	void yaml_handler::on_##which_token##_token(const which_token##_t & which_token) { \
-		if(do_on_##which_token##_token) \
-			do_on_##which_token##_token(which_token); \
+		if(do_on_##which_token##_token)                                                  \
+			do_on_##which_token##_token(which_token);                                      \
 	}
 
 

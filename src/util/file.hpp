@@ -28,13 +28,13 @@
 
 namespace libyaml {
 	namespace util {
-		template<class NameT>
+		template <class NameT>
 		bool exists(const NameT & name) noexcept;
 	}
 }
 
 
-template<class NameT>
+template <class NameT>
 bool libyaml::util::exists(const NameT & name) noexcept {
 	if(FILE * file = fopen(name.data(), "r")) {
 		fclose(file);
