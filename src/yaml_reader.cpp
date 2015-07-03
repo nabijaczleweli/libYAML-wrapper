@@ -36,36 +36,45 @@ using namespace libyaml::util;
 optional<unsigned int> yaml_reader::consecutive_notoken_threshold = 10;
 
 
-void yaml_reader::read(const string & from) {
+void yaml_reader::open(const string & from) {
 	if(exists(from))
 		parser.read_from_file(from);
 	else
 		parser.read_from_data(from);
+}
 
-
-	auto notokens_tolerated   = consecutive_notoken_threshold ? consecutive_notoken_threshold.value() : 0u;
-	std::exception_ptr thrown = nullptr;
+void yaml_reader::read() {
+	auto notokens_tolerated_left = consecutive_notoken_threshold ? consecutive_notoken_threshold.value() : 0u;
+	std::exception_ptr thrown    = nullptr;
 	yaml_token_t token;
 	do {
 		yaml_parser_scan(&parser, &token);
 		auto type = token.type;
 
-		for_each(handlers.begin(), handlers.end(), [&](auto & handler) {
+		for(const auto & handler : handlers)
 			try {
 				type = handler->handle(token, false);
 			} catch(...) {
 				thrown = current_exception();
 			}
-		});
 
 		if(consecutive_notoken_threshold) {
-			if(token.type == YAML_NO_TOKEN)
-				--notokens_tolerated;
+			if(type == YAML_NO_TOKEN)
+				--notokens_tolerated_left;
 			else
-				notokens_tolerated = consecutive_notoken_threshold.value();
+				notokens_tolerated_left = consecutive_notoken_threshold.value();
 		}
-	} while(yaml_handler::delete_token(token) != YAML_STREAM_END_TOKEN && !thrown && (!consecutive_notoken_threshold || notokens_tolerated));
+	} while(yaml_handler::delete_token(token) != YAML_STREAM_END_TOKEN && !thrown && (!consecutive_notoken_threshold || notokens_tolerated_left));
 
 	if(thrown)
 		rethrow_exception(thrown);
+}
+
+void yaml_reader::read(const string & from) {
+	open(from);
+	read();
+}
+
+void yaml_reader::append_handler(all_reference_wrapper<yaml_handler> ref) {
+	handlers.emplace_back(ref.get().clone());
 }

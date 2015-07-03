@@ -32,6 +32,7 @@
 *.s*-toks
 *.s*-workspace
 out/*
+catch/*
 # Test dir
 *.exe
 *.out

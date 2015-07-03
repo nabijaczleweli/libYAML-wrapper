@@ -21,5 +21,47 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#define CATCH_CONFIG_MAIN
-#include "catch/catch.hpp"
+#ifndef REFERENCE_WRAPPER_HPP
+#define REFERENCE_WRAPPER_HPP
+
+
+#include <utility>
+
+
+namespace libyaml {
+	namespace util {
+		template <class T>
+		class all_reference_wrapper {
+		private:
+			T * const val;
+
+		public:
+			inline all_reference_wrapper(T && t) : val(const_cast<T *>(std::addressof(t))) {}
+			inline all_reference_wrapper(const T & t) : val(const_cast<T *>(std::addressof(t))) {}
+			inline constexpr all_reference_wrapper(all_reference_wrapper &&) = default;
+			inline constexpr all_reference_wrapper(const all_reference_wrapper &) = default;
+
+			inline all_reference_wrapper & operator=(const all_reference_wrapper &) = default;
+			inline all_reference_wrapper & operator=(all_reference_wrapper &&) = default;
+
+			inline operator T &() {
+				return *val;
+			}
+
+			inline T & get() {
+				return *val;
+			}
+
+			inline operator const T &() const {
+				return *val;
+			}
+
+			inline const T & get() const {
+				return *val;
+			}
+		};
+	}
+}
+
+
+#endif  // REFERENCE_WRAPPER_HPP

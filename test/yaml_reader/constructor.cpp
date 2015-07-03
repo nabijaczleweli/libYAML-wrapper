@@ -21,50 +21,27 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#ifndef VARIADIC_HPP
-#define VARIADIC_HPP
+#include "catch/catch.hpp"
+#define private public  // Hack into yaml_reader::handlers
+#include <yaml_reader.hpp>
+#undef private
+#include <memory>
 
 
-#include <utility>
+using namespace libyaml;
 
 
-namespace libyaml {
-	namespace util {
-		template <class T, class... TT>
-		struct over_all {
-			using next  = over_all<TT...>;
-			enum { size = 1 + next::size };
+TEST_CASE("Reader constructors", "[reader]") {
+	yaml_handler empty_handler;
 
-			template <class C>
-			inline constexpr static C for_each(C cbk, T && tval, TT &&... ttval) {
-				cbk(std::forward<T>(tval));
-				next::for_each(cbk, std::forward<TT>(ttval)...);
-				return cbk;
-			}
+	REQUIRE(yaml_reader().handlers.size() == 0);
+	REQUIRE(yaml_reader({yaml_handler()}).handlers.size() == 1);
+	REQUIRE(yaml_reader({empty_handler, yaml_handler()}).handlers.size() == 2);
 
-			template <class C>
-			inline constexpr C operator()(C cbk, T && tval, TT &&... ttval) const {
-				return for_each(cbk, std::forward<T>(tval), std::forward<TT>(ttval)...);
-			}
-		};
-
-		template <class T>
-		struct over_all<T> {
-			enum { size = 1 };
-
-			template <class C>
-			inline constexpr static C for_each(C cbk, T && tval) {
-				cbk(std::forward<T>(tval));
-				return cbk;
-			}
-
-			template <class C>
-			inline constexpr C operator()(C cbk, T && tval) const {
-				return for_each(cbk, std::forward<T>(tval));
-			}
-		};
+	{
+		yaml_reader rdr;
+		rdr.append_handler(empty_handler);
+		rdr.append_handler(yaml_handler());
+		REQUIRE(rdr.handlers.size() == 2);
 	}
 }
-
-
-#endif  // VARIADIC_HPP
