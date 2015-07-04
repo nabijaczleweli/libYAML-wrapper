@@ -22,25 +22,38 @@
 
 
 #include "catch/catch.hpp"
-#define private public  // Hack into yaml_reader::handlers
-#include <yaml_reader.hpp>
+#define private public
+#include <yaml_parser.hpp>
 #undef private
+#include <cstdio>
 
 
+using namespace std;
 using namespace libyaml;
 
 
-TEST_CASE("Reader constructors", "[reader]") {
-	yaml_handler empty_handler;
-
-	REQUIRE(yaml_reader().handlers.size() == 0);
-	REQUIRE(yaml_reader({yaml_handler()}).handlers.size() == 1);
-	REQUIRE(yaml_reader({empty_handler, yaml_handler()}).handlers.size() == 2);
+TEST_CASE("Parser open() and constructors", "[parser]") {
+	REQUIRE(yaml_parser().input_buffer.size() == 0);
+	REQUIRE(yaml_parser().input_file == nullptr);
 
 	{
-		yaml_reader rdr;
-		rdr.append_handler(empty_handler);
-		rdr.append_handler(yaml_handler());
-		REQUIRE(rdr.handlers.size() == 2);
+		yaml_parser parser;
+		REQUIRE_THROWS_AS(parser.read_from_file(std::tmpnam(nullptr)), ios_base::failure);
+		REQUIRE(parser.input_buffer.size() == 0);
+		REQUIRE(parser.input_file == nullptr);
+	}
+
+	{
+		yaml_parser parser;
+		parser.read_from_data("");
+		REQUIRE(parser.input_buffer.size() == 0);
+		REQUIRE(parser.input_file == nullptr);
+	}
+
+	{
+		yaml_parser parser;
+		parser.read_from_data("Sample data");
+		REQUIRE(parser.input_buffer.size() != 0);
+		REQUIRE(parser.input_file == nullptr);
 	}
 }

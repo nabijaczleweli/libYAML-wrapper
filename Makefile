@@ -40,7 +40,7 @@ test : $(TSTDIR)test$(EXE)
 	@rm $(TSTDIR)/*$(DLL)
 
 clean :
-	rm -rf $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE)
+	rm -rf $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE) $(TSTDIR)*$(OBJ)
 
 git :
 	git submodule update --recursive --init --remote
