@@ -40,13 +40,9 @@ yaml_parser::~yaml_parser() noexcept {
 }
 
 void yaml_parser::read_from_file(const string & path) {
-	static detail::file_deleter deleter;
-
-	input_file.reset(fopen(path.c_str(), "r"), deleter);
-	if(!input_file) {
-		input_file.reset(static_cast<FILE *>(nullptr), deleter);
+	input_file.reset(fopen(path.c_str(), "r"), detail::file_deleter());
+	if(!input_file)
 		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
-	}
 
 	yaml_parser_set_input_file(this, input_file.get());
 }

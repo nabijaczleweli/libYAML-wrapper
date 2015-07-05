@@ -25,6 +25,7 @@
 #define private public
 #include <yaml_parser.hpp>
 #undef private
+#include <fstream>
 #include <cstdio>
 
 
@@ -32,15 +33,25 @@ using namespace std;
 using namespace libyaml;
 
 
-TEST_CASE("Parser open() and constructors", "[parser]") {
+TEST_CASE("Parser read*() and constructors", "[parser]") {
 	REQUIRE(yaml_parser().input_buffer.size() == 0);
 	REQUIRE(yaml_parser().input_file == nullptr);
 
 	{
 		yaml_parser parser;
-		REQUIRE_THROWS_AS(parser.read_from_file(std::tmpnam(nullptr)), ios_base::failure);
+		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), ios_base::failure);
 		REQUIRE(parser.input_buffer.size() == 0);
 		REQUIRE(parser.input_file == nullptr);
+	}
+
+	{
+		const auto name = tmpnam(nullptr);
+		ofstream{name};
+		yaml_parser parser;
+		REQUIRE_NOTHROW(parser.read_from_file(name));
+		REQUIRE(parser.input_buffer.size() == 0);
+		REQUIRE(parser.input_file != nullptr);
+		remove(name);
 	}
 
 	{
