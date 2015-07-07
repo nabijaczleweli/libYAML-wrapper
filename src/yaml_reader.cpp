@@ -44,8 +44,11 @@ void yaml_reader::open(const string & from) {
 }
 
 void yaml_reader::read() {
+	if(!parser.has_input())
+		return;
+
 	auto notokens_tolerated_left = consecutive_notoken_threshold ? consecutive_notoken_threshold.value() : 0u;
-	std::exception_ptr thrown    = nullptr;
+	exception_ptr thrown         = nullptr;
 	yaml_token_t token;
 	do {
 		yaml_parser_scan(&parser, &token);

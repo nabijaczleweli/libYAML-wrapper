@@ -35,7 +35,7 @@ all : $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(SOURCES)
 
 test : $(TSTDIR)test$(EXE)
 	@cp $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(dir $(filter-out all,$^))
-	cd $(TSTDIR) && ./test$(EXE) -s
+	cd $(TSTDIR) && ./test$(EXE) -s -r compact
 # -r compact
 	@rm $(TSTDIR)/*$(DLL)
 

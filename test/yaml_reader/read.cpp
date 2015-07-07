@@ -70,6 +70,7 @@ public:
 };
 
 TEST_CASE("Basic read() tests", "[reader]") {
+	REQUIRE_NOTHROW(yaml_reader().read());
 	REQUIRE_NOTHROW(yaml_reader().read(""));
 
 	{
@@ -91,5 +92,6 @@ TEST_CASE("Basic read() tests", "[reader]") {
 			throw nullptr;
 		};
 		REQUIRE_THROWS_AS(yaml_reader({handler}).read(""), nullptr_t);
+		REQUIRE_NOTHROW(yaml_reader({handler}).read());
 	}
 }

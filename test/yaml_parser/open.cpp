@@ -30,18 +30,20 @@
 
 
 using namespace std;
+using namespace std::experimental;
 using namespace libyaml;
 
 
 TEST_CASE("Parser read*() and constructors", "[parser]") {
-	REQUIRE(yaml_parser().input_buffer.size() == 0);
-	REQUIRE(yaml_parser().input_file == nullptr);
+	REQUIRE_FALSE(yaml_parser().input_buffer);
+	REQUIRE_FALSE(yaml_parser().input_file);
 
 	{
 		yaml_parser parser;
 		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), ios_base::failure);
-		REQUIRE(parser.input_buffer.size() == 0);
-		REQUIRE(parser.input_file == nullptr);
+		REQUIRE_FALSE(parser.input_buffer);
+		REQUIRE_FALSE(parser.input_file);
+		REQUIRE_FALSE(parser.has_input());
 	}
 
 	{
@@ -49,22 +51,39 @@ TEST_CASE("Parser read*() and constructors", "[parser]") {
 		ofstream{name};
 		yaml_parser parser;
 		REQUIRE_NOTHROW(parser.read_from_file(name));
-		REQUIRE(parser.input_buffer.size() == 0);
-		REQUIRE(parser.input_file != nullptr);
+		REQUIRE_FALSE(parser.input_buffer);
+		REQUIRE(parser.input_file);
+		REQUIRE(parser.has_input());
 		remove(name);
 	}
 
 	{
 		yaml_parser parser;
 		parser.read_from_data("");
-		REQUIRE(parser.input_buffer.size() == 0);
-		REQUIRE(parser.input_file == nullptr);
+		REQUIRE(parser.input_buffer);
+		REQUIRE(parser.input_buffer->size() == 0);
+		REQUIRE_FALSE(parser.input_file);
 	}
 
 	{
 		yaml_parser parser;
 		parser.read_from_data("Sample data");
-		REQUIRE(parser.input_buffer.size() != 0);
-		REQUIRE(parser.input_file == nullptr);
+		REQUIRE(parser.input_buffer);
+		REQUIRE(parser.input_buffer->size() == strlen("Sample data"));
+		REQUIRE_FALSE(parser.input_file);
+	}
+
+	{
+		yaml_parser parser;
+		parser.read_from_data("Sample data #1");
+		REQUIRE_THROWS_AS(parser.read_from_data("Sample data #2"), yaml_parser_exception);
+		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), yaml_parser_exception);
+	}
+
+	{
+		yaml_parser parser;
+		parser.read_from_file("test.yaml");
+		REQUIRE_THROWS_AS(parser.read_from_data("Sample data"), yaml_parser_exception);
+		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), yaml_parser_exception);
 	}
 }

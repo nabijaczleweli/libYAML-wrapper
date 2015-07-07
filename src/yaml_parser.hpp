@@ -29,16 +29,38 @@
 #define YAML_DECLARE_STATIC
 
 #include <yaml.h>
+#include <map>
 #include <memory>
 #include <string>
 #include <cstdlib>
+#include <stdexcept>
+#include <functional>
+#include <experimental/optional>
 
 
 namespace libyaml {
+	class yaml_parser_exception : public std::logic_error {
+	public:
+		enum class exception_type {
+			open_file_input_with_input,
+			open_data_input_with_input,
+		};
+
+	protected:
+		static const std::map<exception_type, std::function<std::string(const std::string &)>> exception_message_factory;
+
+	public:
+		exception_type cause;
+
+		yaml_parser_exception(exception_type err, const std::string & detail);
+	};
+
 	/** A wrapper around yaml_parser_t, for OO-ness */
 	class yaml_parser : public yaml_parser_t {
 	private:
-		std::basic_string<unsigned char> input_buffer;
+		using buffer_t = std::basic_string<unsigned char>;
+
+		std::experimental::optional<buffer_t> input_buffer;
 		std::shared_ptr<std::FILE> input_file;
 
 		void close_file();
@@ -49,6 +71,8 @@ namespace libyaml {
 
 		void read_from_file(const std::string & path);
 		void read_from_data(const std::string & data);
+
+		bool has_input() const;
 	};
 }
 

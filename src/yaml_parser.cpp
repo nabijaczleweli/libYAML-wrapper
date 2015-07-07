@@ -27,7 +27,17 @@
 
 
 using namespace std;
+using namespace std::experimental;
 using namespace libyaml;
+
+
+const map<yaml_parser_exception::exception_type, function<string(const string &)>> yaml_parser_exception::exception_message_factory({
+    {exception_type::open_file_input_with_input, [](const string & file) { return "Cannot open input file \"" + file + "\" if some input is already set"; }},
+    {exception_type::open_data_input_with_input,
+     [](const string & data) { return "Cannot specify input buffer of length " + to_string(data.size()) + " if if some input is already set"; }},
+});
+
+yaml_parser_exception::yaml_parser_exception(exception_type err, const string & detail) : logic_error(exception_message_factory.at(err)(detail)), cause(err) {}
 
 
 yaml_parser::yaml_parser() noexcept {
@@ -35,11 +45,15 @@ yaml_parser::yaml_parser() noexcept {
 }
 
 yaml_parser::~yaml_parser() noexcept {
-	fill(input_buffer.begin(), input_buffer.end(), 0);
 	yaml_parser_delete(this);
+	if(input_buffer)
+		fill(input_buffer->begin(), input_buffer->end(), 0);
 }
 
 void yaml_parser::read_from_file(const string & path) {
+	if(has_input())
+		throw yaml_parser_exception(yaml_parser_exception::exception_type::open_file_input_with_input, path);
+
 	input_file.reset(fopen(path.c_str(), "r"), detail::file_deleter());
 	if(!input_file)
 		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
@@ -48,6 +62,16 @@ void yaml_parser::read_from_file(const string & path) {
 }
 
 void yaml_parser::read_from_data(const string & data) {
-	input_buffer.assign(data.begin(), data.end());
-	yaml_parser_set_input_string(this, input_buffer.c_str(), input_buffer.size());
+	if(has_input())
+		throw yaml_parser_exception(yaml_parser_exception::exception_type::open_data_input_with_input, data);
+
+	if(!input_buffer)
+		input_buffer = make_optional(buffer_t(data.begin(), data.end()));
+	else
+		input_buffer->assign(data.begin(), data.end());
+	yaml_parser_set_input_string(this, input_buffer->c_str(), input_buffer->size());
+}
+
+bool yaml_parser::has_input() const {
+	return input_file || input_buffer;
 }
