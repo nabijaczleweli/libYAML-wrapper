@@ -21,26 +21,18 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#pragma once
-#ifndef UTIL_FILE_HPP
-#define UTIL_FILE_HPP
+#include "catch/catch.hpp"
+#define private public
+#include <yaml_parser.hpp>
+#undef private
 
 
-namespace libyaml {
-	namespace util {
-		template <class NameT>
-		bool exists(const NameT & name) noexcept(noexcept(name.data()));
-	}
+using namespace libyaml;
+
+
+TEST_CASE("Parser constructors", "[parser][constructor]") {
+	REQUIRE_NOTHROW(yaml_parser().~yaml_parser());
+	REQUIRE_FALSE(yaml_parser().input_buffer);
+	REQUIRE_FALSE(yaml_parser().input_file);
+	REQUIRE_FALSE(yaml_parser().has_input());
 }
-
-
-template <class NameT>
-bool libyaml::util::exists(const NameT & name) noexcept(noexcept(name.data())) {
-	if(FILE * file = fopen(name.data(), "r")) {
-		fclose(file);
-		return true;
-	} else
-		return false;
-}
-
-#endif  // UTIL_FILE_HPP

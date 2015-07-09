@@ -30,7 +30,7 @@
 using namespace libyaml;
 
 
-TEST_CASE("Reader constructors", "[reader]") {
+TEST_CASE("Reader constructors", "[reader][constructor]") {
 	yaml_handler empty_handler;
 
 	REQUIRE(yaml_reader().handlers.size() == 0);

@@ -34,10 +34,7 @@ using namespace std::experimental;
 using namespace libyaml;
 
 
-TEST_CASE("Parser read*() and constructors", "[parser]") {
-	REQUIRE_FALSE(yaml_parser().input_buffer);
-	REQUIRE_FALSE(yaml_parser().input_file);
-
+TEST_CASE("Parser read*()", "[parser]") {
 	{
 		yaml_parser parser;
 		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), ios_base::failure);
@@ -63,6 +60,7 @@ TEST_CASE("Parser read*() and constructors", "[parser]") {
 		REQUIRE(parser.input_buffer);
 		REQUIRE(parser.input_buffer->size() == 0);
 		REQUIRE_FALSE(parser.input_file);
+		REQUIRE(parser.has_input());
 	}
 
 	{
@@ -71,6 +69,7 @@ TEST_CASE("Parser read*() and constructors", "[parser]") {
 		REQUIRE(parser.input_buffer);
 		REQUIRE(parser.input_buffer->size() == strlen("Sample data"));
 		REQUIRE_FALSE(parser.input_file);
+		REQUIRE(parser.has_input());
 	}
 
 	{

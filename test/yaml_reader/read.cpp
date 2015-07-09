@@ -79,9 +79,6 @@ TEST_CASE("Basic read() tests", "[reader]") {
 		handlers.reserve(10);
 		fill_n(back_inserter(handlers), 10, handler);
 		yaml_reader(handlers).read("%YAML 2.2");
-		const auto desired{
-		    handlers.size(),
-		};
 		REQUIRE(handler.stream_count() == handlers.size());
 		REQUIRE(handler.version_count() == handlers.size());
 	}
