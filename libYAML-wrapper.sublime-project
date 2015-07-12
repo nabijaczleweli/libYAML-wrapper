@@ -2,8 +2,8 @@
 	"build_systems":
 	[
 		{
-			"cmd": "make --no-print-directory -C\"$project_path\" all",
-			"name": "Build Cwepper"
+			"cmd": "make --no-print-directory -C\"$project_path\" test",
+			"name": "Build libYAML-wrapper",
 		}
 	],
 	"folders":

@@ -34,9 +34,8 @@ TEST_SOURCES := $(filter-out $(TSTDIR)test.cpp,$(sort $(shell $(FIND) $(TSTDIR) 
 all : $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(SOURCES)
 
 test : $(TSTDIR)test$(EXE)
-	@cp $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(dir $(filter-out all,$^))
-	cd $(TSTDIR) && ./test$(EXE) -s -r compact
-# -r compact
+	@cp $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(dir $^) || :
+	cd $(TSTDIR) && ./test$(EXE) --reporter=spec
 	@rm $(TSTDIR)/*$(DLL)
 
 clean :
@@ -44,16 +43,15 @@ clean :
 
 git :
 	git submodule update --recursive --init --remote
-	@$(MKDIR) catch 1>$(devnull) 2>&1 || :
-	curl -s https://raw.githubusercontent.com/philsquared/Catch/master/single_include/catch.hpp -ocatch/catch.hpp
 
 
-$(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) : $(subst $(SRCDIR),$(OBJDIR)libyaml/,$(subst .c,$(OBJ),$(subst libyaml/,,$(LIBYAML_SOURCES)))) $(subst $(SRCDIR),$(OBJDIR),$(subst .cpp,$(OBJ),$(SOURCES)))
+$(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) : $(subst $(SRCDIR),$(OBJDIR)libyaml/,$(subst .c,$(OBJ),$(subst libyaml/,,$(LIBYAML_SOURCES)))) \
+                                          $(subst $(SRCDIR),$(OBJDIR),$(subst .cpp,$(OBJ),$(SOURCES)))
 	$(CXX) $(CХХAR) -shared -o$@ $^
 	$(STRIP) $(STRIPAR) $@
 
 $(TSTDIR)test$(EXE) : all $(TSTDIR)test$(OBJ) $(TEST_SOURCES)
-	$(CXX) $(CХХAR) -isystemsrc -I. -o$@ -L$(OUTDIR) -llibyaml-wrapper $(filter-out all,$^)
+	$(CXX) $(CХХAR) -isystemsrc -Ibandit -o$@ -L$(OUTDIR) -llibyaml-wrapper $(filter-out all,$^)
 
 $(OBJDIR)%$(OBJ) : $(SRCDIR)%.cpp
 	@$(MKDIR) -p $(dir $@) || :
@@ -61,7 +59,7 @@ $(OBJDIR)%$(OBJ) : $(SRCDIR)%.cpp
 
 $(TSTDIR)test$(OBJ) : $(TSTDIR)test.cpp
 	@$(MKDIR) -p $(dir $@) || :
-	$(CXX) $(CХХAR) -isystemsrc -I. -c -o$@ $^
+	$(CXX) $(CХХAR) -Wp,-w -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-unused-parameter -isystemsrc -Ibandit -c -o$@ $^
 
 $(OBJDIR)libyaml/%$(OBJ) : libyaml/$(SRCDIR)%.c
 	@$(MKDIR) -p $(dir $@) || :

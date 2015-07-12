@@ -21,26 +21,77 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "catch/catch.hpp"
+#include "bandit/bandit.h"
 #define private public  // Hack into yaml_reader::handlers
 #include <yaml_reader.hpp>
 #undef private
+#include <vector>
+#include <list>
 
 
+using namespace std;
+using namespace bandit;
 using namespace libyaml;
 
 
-TEST_CASE("Reader constructors", "[reader][constructor]") {
-	yaml_handler empty_handler;
-
-	REQUIRE(yaml_reader().handlers.size() == 0);
-	REQUIRE(yaml_reader({yaml_handler()}).handlers.size() == 1);
-	REQUIRE(yaml_reader({empty_handler, yaml_handler()}).handlers.size() == 2);
-
-	{
-		yaml_reader rdr;
-		rdr.append_handler(empty_handler);
-		rdr.append_handler(yaml_handler());
-		REQUIRE(rdr.handlers.size() == 2);
+#define COPIES_FROM_CONTAINER(container)                          \
+	"copies handlers from " #container, [&] {                       \
+		container<yaml_handler> handlers;                             \
+		AssertThat(yaml_reader(handlers).handlers, Is().Empty());     \
+                                                                  \
+		handlers.emplace_back();                                      \
+		AssertThat(yaml_reader(handlers).handlers, Is().OfLength(1)); \
+                                                                  \
+		handlers.emplace_back(empty_handler);                         \
+		AssertThat(yaml_reader(handlers).handlers, Is().OfLength(2)); \
 	}
-}
+
+
+go_bandit([&] {
+	describe("reader", [&] {
+		yaml_handler empty_handler;
+
+		describe("constructors", [&] {
+			it("is empty by default", [&] {
+				AssertThat(yaml_reader().handlers, Is().Empty());
+				AssertThat(yaml_reader().parser.has_input(), Is().EqualTo(false));
+			});
+
+			it("copies handlers from init-list", [&] {
+				AssertThat(yaml_reader({}).handlers, Is().Empty());
+				AssertThat(yaml_reader({yaml_handler()}).handlers, Is().OfLength(1));
+				AssertThat(yaml_reader({empty_handler, yaml_handler()}).handlers, Is().OfLength(2));
+			});
+
+			it(COPIES_FROM_CONTAINER(vector));
+			it(COPIES_FROM_CONTAINER(list));
+
+			it("copies", [&] {
+				yaml_reader base_0({});
+				yaml_reader base_1({empty_handler});
+				yaml_reader base_2({empty_handler, empty_handler});
+
+				AssertThat(yaml_reader(base_0).handlers, Is().Empty());
+				AssertThat(yaml_reader(base_1).handlers, Is().OfLength(1));
+				AssertThat(yaml_reader(base_2).handlers, Is().OfLength(2));
+			});
+
+			it("moves", [&] {
+				AssertThat(yaml_reader(yaml_reader({})).handlers, Is().Empty());
+				AssertThat(yaml_reader(yaml_reader({empty_handler})).handlers, Is().OfLength(1));
+				AssertThat(yaml_reader(yaml_reader({empty_handler, empty_handler})).handlers, Is().OfLength(2));
+			});
+		});
+
+		it("appends handlers", [&] {
+			yaml_reader reader;
+			AssertThat(reader.handlers, Is().Empty());
+
+			reader.append_handler(empty_handler);
+			AssertThat(reader.handlers, Is().OfLength(1));
+
+			reader.append_handler(yaml_handler());
+			AssertThat(reader.handlers, Is().OfLength(2));
+		});
+	});
+});

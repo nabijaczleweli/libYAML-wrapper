@@ -21,7 +21,8 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "catch/catch.hpp"
+#include "bandit/bandit.h"
+#include "../util/throw.hpp"
 #define private public  // Hack into yaml_reader::handlers
 #include <yaml_reader.hpp>
 #undef private
@@ -29,19 +30,19 @@
 
 
 using namespace std;
+using namespace bandit;
 using namespace libyaml;
 
 
 class yaml_sequence_counting_handler : public yaml_handler {
 private:
-	shared_ptr<int> stream_counter;
-	shared_ptr<int> version_counter;
+	int & stream_counter;
+	int & version_counter;
 
 public:
-	inline yaml_sequence_counting_handler() : stream_counter(make_shared<int>(0)), version_counter(make_shared<int>(0)) {}
-	inline yaml_sequence_counting_handler(yaml_sequence_counting_handler &&) = default;
-	inline yaml_sequence_counting_handler(const yaml_sequence_counting_handler &) = default;
-
+	inline yaml_sequence_counting_handler(int & strm, int & ver) : stream_counter(strm), version_counter(ver) {}
+	inline yaml_sequence_counting_handler(yaml_sequence_counting_handler && ysch) = default;
+	inline yaml_sequence_counting_handler(const yaml_sequence_counting_handler & ysch) = default;
 	virtual ~yaml_sequence_counting_handler() noexcept = default;
 
 	inline yaml_sequence_counting_handler & operator=(yaml_sequence_counting_handler &&) = default;
@@ -52,43 +53,42 @@ public:
 	}
 
 	virtual void on_stream_start_token(const stream_start_t &) override {
-		++*stream_counter;
+		++stream_counter;
 	}
 
 	virtual void on_version_directive_token(const version_directive_t &) override {
-		++*version_counter;
-	}
-
-
-	int stream_count() const {
-		return *stream_counter;
-	}
-
-	int version_count() const {
-		return *version_counter;
+		++version_counter;
 	}
 };
 
-TEST_CASE("Basic read() tests", "[reader]") {
-	REQUIRE_NOTHROW(yaml_reader().read());
-	REQUIRE_NOTHROW(yaml_reader().read(""));
+go_bandit([&] {
+	describe("reader", [&] {
+		describe("read()", [&] {
+			it("doesn't throw", [&] {
+				AssertNothrow(yaml_reader().read());
+				AssertNothrow(yaml_reader().read(""));
+			});
 
-	{
-		yaml_sequence_counting_handler handler;
-		vector<yaml_sequence_counting_handler> handlers;
-		handlers.reserve(10);
-		fill_n(back_inserter(handlers), 10, handler);
-		yaml_reader(handlers).read("%YAML 2.2");
-		REQUIRE(handler.stream_count() == handlers.size());
-		REQUIRE(handler.version_count() == handlers.size());
-	}
+			it("spreads tokens across all handlers", [&] {
+				int streams{}, versions{};
+				yaml_sequence_counting_handler handler(streams, versions);
+				vector<yaml_sequence_counting_handler> handlers;
+				handlers.reserve(10);
+				fill_n(back_inserter(handlers), 10, handler);
 
-	{
-		yaml_handler handler;
-		handler.do_on_stream_start_token = [&](const auto &) {
-			throw nullptr;
-		};
-		REQUIRE_THROWS_AS(yaml_reader({handler}).read(""), nullptr_t);
-		REQUIRE_NOTHROW(yaml_reader({handler}).read());
-	}
-}
+				yaml_reader(handlers).read("%YAML 2.2");
+				AssertThat(handlers, Is().OfLength(streams));
+				AssertThat(handlers, Is().OfLength(versions));
+			});
+
+			it("handles exceptions", [&] {
+				yaml_handler handler;
+				handler.do_on_stream_start_token = [&](const auto &) { throw nullptr; };
+				AssertThrows(nullptr_t, yaml_reader({handler}).read(""));
+				AssertNothrow(yaml_reader({handler}).read());
+			});
+
+			// TODO: add test for all tokens in sequence
+		});
+	});
+});

@@ -67,8 +67,8 @@ namespace libyaml {
 
 	public:
 		yaml_parser() noexcept;
-		inline yaml_parser(const yaml_parser &);
-		inline yaml_parser(yaml_parser &&) noexcept;
+		yaml_parser(const yaml_parser &);
+		yaml_parser(yaml_parser &&);
 		virtual ~yaml_parser() noexcept;
 
 		void read_from_file(const std::string & path);
@@ -77,10 +77,6 @@ namespace libyaml {
 		bool has_input() const;
 	};
 }
-
-
-inline libyaml::yaml_parser::yaml_parser(const yaml_parser &) = default;
-inline libyaml::yaml_parser::yaml_parser(yaml_parser &&) noexcept = default;
 
 
 #endif  // YAML_PARSER_HPP

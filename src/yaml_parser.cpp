@@ -44,6 +44,14 @@ yaml_parser::yaml_parser() noexcept {
 	yaml_parser_initialize(this);
 }
 
+yaml_parser::yaml_parser(const yaml_parser & other) : input_buffer(other.input_buffer), input_file(other.input_file) {
+	yaml_parser_initialize(this);
+}
+
+yaml_parser::yaml_parser(yaml_parser && other) : input_buffer(move(other.input_buffer)), input_file(move(other.input_file)) {
+	yaml_parser_initialize(this);
+}
+
 yaml_parser::~yaml_parser() noexcept {
 	yaml_parser_delete(this);
 	if(input_buffer)

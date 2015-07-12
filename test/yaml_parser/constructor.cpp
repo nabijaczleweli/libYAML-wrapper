@@ -21,18 +21,61 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "catch/catch.hpp"
+#include "bandit/bandit.h"
+#include "../util/throw.hpp"
 #define private public
 #include <yaml_parser.hpp>
 #undef private
 
 
+using namespace std;
+using namespace std::experimental;
+using namespace bandit;
 using namespace libyaml;
 
 
-TEST_CASE("Parser constructors", "[parser][constructor]") {
-	REQUIRE_NOTHROW(yaml_parser().~yaml_parser());
-	REQUIRE_FALSE(yaml_parser().input_buffer);
-	REQUIRE_FALSE(yaml_parser().input_file);
-	REQUIRE_FALSE(yaml_parser().has_input());
-}
+go_bandit([&] {
+	describe("parser", [&] {
+		const decltype(declval<yaml_parser>().input_file) no_file;
+
+		describe("constructors", [&] {
+			describe("default", [&] {
+				it("doesn't throw", [&] {
+					AssertNothrow(yaml_parser().~yaml_parser());
+				});
+
+				it("is empty", [&] {
+					AssertThat(yaml_parser().input_buffer, Is().EqualTo(nullopt));
+					AssertThat(yaml_parser().input_file, Is().EqualTo(no_file));
+					AssertThat(yaml_parser().has_input(), Is().EqualTo(false));
+				});
+			});
+
+			describe("copy", [&] {
+				const yaml_parser base;
+
+				it("doesn't throw", [&] {
+					AssertNothrow(yaml_parser(base).~yaml_parser());
+				});
+
+				it("is empty", [&] {
+					AssertThat(yaml_parser(base).input_buffer, Is().EqualTo(nullopt));
+					AssertThat(yaml_parser(base).input_file, Is().EqualTo(no_file));
+					AssertThat(yaml_parser(base).has_input(), Is().EqualTo(false));
+				});
+			});
+
+			describe("move", [&] {
+				it("doesn't throw", [&] {
+					AssertNothrow(yaml_parser(yaml_parser()).~yaml_parser());
+				});
+
+				it("is empty", [&] {
+					AssertThat(yaml_parser(yaml_parser()).input_buffer, Is().EqualTo(nullopt));
+					AssertThat(yaml_parser(yaml_parser()).input_file, Is().EqualTo(no_file));
+					AssertThat(yaml_parser(yaml_parser()).has_input(), Is().EqualTo(false));
+				});
+			});
+		});
+	});
+});

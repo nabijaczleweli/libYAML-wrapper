@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 
-// Copyright (c) 2015 nabijaczleweli
+// Copyright (c) 2015 nabjaczleweli
 
 //  Permission is hereby granted, free of charge, to any person obtaining a
 //  copy of this software and associated documentation files (the "Software"),
@@ -21,13 +21,27 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "bandit/bandit.h"
-#include "util/throw.hpp"
+#ifndef THROW_HPP
+#define THROW_HPP
 
 
-libyaml_test::not_thrown_t libyaml_test::not_thrown;
+#define AssertNothrow(expr)                       \
+	AssertThrows(libyaml_test::not_thrown_t, [&] {  \
+		try {                                         \
+			expr;                                       \
+			throw libyaml_test::not_thrown;             \
+		} catch(const libyaml_test::not_thrown_t &) { \
+			throw;                                      \
+		} catch(...) {                                \
+			throw;                                      \
+		}                                             \
+	}())
 
 
-int main(int argc, char * argv[]) {
-	return bandit::run(argc, argv);
+namespace libyaml_test {
+	struct not_thrown_t {};
+	extern not_thrown_t not_thrown;
 }
+
+
+#endif  // THROW_HPP

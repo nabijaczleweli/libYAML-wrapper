@@ -21,68 +21,82 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "catch/catch.hpp"
+#include "bandit/bandit.h"
+#include "../util/throw.hpp"
 #define private public
 #include <yaml_parser.hpp>
 #undef private
-#include <fstream>
 #include <cstdio>
+#include <fstream>
+#include <iostream>
 
 
 using namespace std;
 using namespace std::experimental;
+using namespace bandit;
 using namespace libyaml;
 
 
-TEST_CASE("Parser read*()", "[parser]") {
-	{
-		yaml_parser parser;
-		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), ios_base::failure);
-		REQUIRE_FALSE(parser.input_buffer);
-		REQUIRE_FALSE(parser.input_file);
-		REQUIRE_FALSE(parser.has_input());
-	}
+go_bandit([&] {
+	describe("parser", [&] {
+		const decltype(declval<yaml_parser>().input_file) no_file;
 
-	{
-		const auto name = tmpnam(nullptr);
-		ofstream{name};
-		yaml_parser parser;
-		REQUIRE_NOTHROW(parser.read_from_file(name));
-		REQUIRE_FALSE(parser.input_buffer);
-		REQUIRE(parser.input_file);
-		REQUIRE(parser.has_input());
-		remove(name);
-	}
+		describe("read()", [&] {
+			it("throws on nonexistant file", [&] {
+				yaml_parser parser;
+				AssertThrows(ios_base::failure, parser.read_from_file(tmpnam(nullptr)));
+				AssertThat(parser.input_buffer, Is().EqualTo(nullopt));
+				AssertThat(parser.input_file, Is().EqualTo(no_file));
+				AssertThat(parser.has_input(), Is().EqualTo(false));
+			});
 
-	{
-		yaml_parser parser;
-		parser.read_from_data("");
-		REQUIRE(parser.input_buffer);
-		REQUIRE(parser.input_buffer->size() == 0);
-		REQUIRE_FALSE(parser.input_file);
-		REQUIRE(parser.has_input());
-	}
+			it("opens existing files", [&] {
+				const auto name = tmpnam(nullptr);
+				ofstream{name};
+				yaml_parser parser;
+				AssertNothrow(parser.read_from_file(name));
+				AssertThat(parser.input_buffer, Is().EqualTo(nullopt));
+				AssertThat(parser.input_file, Is().Not().EqualTo(no_file));
+				AssertThat(parser.has_input(), Is().EqualTo(true));
+				remove(name);
+			});
 
-	{
-		yaml_parser parser;
-		parser.read_from_data("Sample data");
-		REQUIRE(parser.input_buffer);
-		REQUIRE(parser.input_buffer->size() == strlen("Sample data"));
-		REQUIRE_FALSE(parser.input_file);
-		REQUIRE(parser.has_input());
-	}
+			it("opens data of length 0", [&] {
+				yaml_parser parser;
+				parser.read_from_data("");
+				AssertThat(parser.input_buffer, Is().Not().EqualTo(nullopt));
+				AssertThat(*parser.input_buffer, Is().EqualToContainer(""s));
+				AssertThat(parser.input_file, Is().EqualTo(no_file));
+				AssertThat(parser.has_input(), Is().EqualTo(true));
+			});
 
-	{
-		yaml_parser parser;
-		parser.read_from_data("Sample data #1");
-		REQUIRE_THROWS_AS(parser.read_from_data("Sample data #2"), yaml_parser_exception);
-		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), yaml_parser_exception);
-	}
+			it("opens arbitrary data", [&] {
+				yaml_parser parser;
+				parser.read_from_data("Sample data");
+				AssertThat(parser.input_buffer, Is().Not().EqualTo(nullopt));
+				AssertThat(*parser.input_buffer, Is().EqualToContainer("Sample data"s));
+				AssertThat(parser.input_file, Is().EqualTo(no_file));
+				AssertThat(parser.has_input(), Is().EqualTo(true));
+			});
 
-	{
-		yaml_parser parser;
-		parser.read_from_file("test.yaml");
-		REQUIRE_THROWS_AS(parser.read_from_data("Sample data"), yaml_parser_exception);
-		REQUIRE_THROWS_AS(parser.read_from_file(tmpnam(nullptr)), yaml_parser_exception);
-	}
-}
+			describe("reopening", [&] {
+				it("throws with data already open", [&] {
+					yaml_parser parser;
+					parser.read_from_data("Sample data #1");
+					AssertThrows(yaml_parser_exception, parser.read_from_data("Sample data #2"));
+					AssertThrows(yaml_parser_exception, parser.read_from_file(tmpnam(nullptr)));
+				});
+
+				it("throws with file already open", [&] {
+					const auto name = tmpnam(nullptr);
+					ofstream{name};
+					yaml_parser parser;
+					parser.read_from_file(name);
+					AssertThrows(yaml_parser_exception, parser.read_from_data("Sample data"));
+					AssertThrows(yaml_parser_exception, parser.read_from_file(tmpnam(nullptr)));
+					remove(name);
+				});
+			});
+		});
+	});
+});
