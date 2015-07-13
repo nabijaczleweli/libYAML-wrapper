@@ -66,16 +66,6 @@ go_bandit([&] {
 			it(COPIES_FROM_CONTAINER(vector));
 			it(COPIES_FROM_CONTAINER(list));
 
-			it("copies", [&] {
-				yaml_reader base_0({});
-				yaml_reader base_1({empty_handler});
-				yaml_reader base_2({empty_handler, empty_handler});
-
-				AssertThat(yaml_reader(base_0).handlers, Is().Empty());
-				AssertThat(yaml_reader(base_1).handlers, Is().OfLength(1));
-				AssertThat(yaml_reader(base_2).handlers, Is().OfLength(2));
-			});
-
 			it("moves", [&] {
 				AssertThat(yaml_reader(yaml_reader({})).handlers, Is().Empty());
 				AssertThat(yaml_reader(yaml_reader({empty_handler})).handlers, Is().OfLength(1));

@@ -59,7 +59,7 @@ $(OBJDIR)%$(OBJ) : $(SRCDIR)%.cpp
 
 $(TSTDIR)test$(OBJ) : $(TSTDIR)test.cpp
 	@$(MKDIR) -p $(dir $@) || :
-	$(CXX) $(CХХAR) -Wp,-w -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-unused-parameter -isystemsrc -Ibandit -c -o$@ $^
+	$(CXX) $(CХХAR) -isystemsrc -Ibandit -c -o$@ $^
 
 $(OBJDIR)libyaml/%$(OBJ) : libyaml/$(SRCDIR)%.c
 	@$(MKDIR) -p $(dir $@) || :

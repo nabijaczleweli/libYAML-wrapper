@@ -51,7 +51,7 @@ void yaml_reader::read() {
 	exception_ptr thrown         = nullptr;
 	yaml_token_t token;
 	do {
-		yaml_parser_scan(&parser, &token);
+		yaml_parser_scan(parser, &token);
 		auto type = token.type;
 
 		for(const auto & handler : handlers)

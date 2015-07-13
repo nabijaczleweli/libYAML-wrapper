@@ -56,27 +56,36 @@ namespace libyaml {
 	};
 
 	/** A wrapper around yaml_parser_t, for OO-ness */
-	class yaml_parser : public yaml_parser_t {
+	class yaml_parser {
 	private:
 		using buffer_t = std::basic_string<unsigned char>;
 
+		std::unique_ptr<yaml_parser_t, void (*)(yaml_parser_t *)> parser;
 		std::experimental::optional<buffer_t> input_buffer;
 		std::shared_ptr<std::FILE> input_file;
 
 		void close_file();
 
 	public:
-		yaml_parser() noexcept;
-		yaml_parser(const yaml_parser &);
-		yaml_parser(yaml_parser &&);
+		yaml_parser();
+		inline yaml_parser(yaml_parser &&);
 		virtual ~yaml_parser() noexcept;
+
+		inline yaml_parser & operator=(yaml_parser &&);
 
 		void read_from_file(const std::string & path);
 		void read_from_data(const std::string & data);
 
 		bool has_input() const;
+
+		operator yaml_parser_t *();
+		operator const yaml_parser_t *() const;
 	};
 }
+
+
+inline libyaml::yaml_parser::yaml_parser(yaml_parser &&) = default;
+inline libyaml::yaml_parser & libyaml::yaml_parser::operator=(yaml_parser &&) = default;
 
 
 #endif  // YAML_PARSER_HPP

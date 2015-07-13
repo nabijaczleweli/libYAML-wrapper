@@ -49,13 +49,13 @@ namespace libyaml {
 		static std::experimental::optional<unsigned int> consecutive_notoken_threshold;
 
 		inline yaml_reader();
-		inline yaml_reader(const yaml_reader &);
 		inline yaml_reader(yaml_reader &&);
 		inline yaml_reader(std::initializer_list<libyaml::util::all_reference_wrapper<yaml_handler>> lst);
 		template <class T>
 		inline yaml_reader(const T & cont);
-
 		inline ~yaml_reader();
+
+		inline yaml_reader & operator=(yaml_reader &&);
 
 		void open(const std::string & from);
 
@@ -68,10 +68,9 @@ namespace libyaml {
 
 
 inline libyaml::yaml_reader::yaml_reader() = default;
-inline libyaml::yaml_reader::yaml_reader(const yaml_reader &) = default;
 inline libyaml::yaml_reader::yaml_reader(yaml_reader &&) = default;
-
 inline libyaml::yaml_reader::~yaml_reader() = default;
+inline libyaml::yaml_reader & libyaml::yaml_reader::operator=(yaml_reader &&) = default;
 
 inline libyaml::yaml_reader::yaml_reader(std::initializer_list<libyaml::util::all_reference_wrapper<yaml_handler>> lst) {
 	handlers.reserve(lst.size());

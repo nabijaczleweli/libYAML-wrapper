@@ -51,20 +51,6 @@ go_bandit([&] {
 				});
 			});
 
-			describe("copy", [&] {
-				const yaml_parser base;
-
-				it("doesn't throw", [&] {
-					AssertNothrow(yaml_parser(base).~yaml_parser());
-				});
-
-				it("is empty", [&] {
-					AssertThat(yaml_parser(base).input_buffer, Is().EqualTo(nullopt));
-					AssertThat(yaml_parser(base).input_file, Is().EqualTo(no_file));
-					AssertThat(yaml_parser(base).has_input(), Is().EqualTo(false));
-				});
-			});
-
 			describe("move", [&] {
 				it("doesn't throw", [&] {
 					AssertNothrow(yaml_parser(yaml_parser()).~yaml_parser());

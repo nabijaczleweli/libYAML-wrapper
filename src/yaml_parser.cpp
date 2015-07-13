@@ -40,20 +40,11 @@ const map<yaml_parser_exception::exception_type, function<string(const string &)
 yaml_parser_exception::yaml_parser_exception(exception_type err, const string & detail) : logic_error(exception_message_factory.at(err)(detail)), cause(err) {}
 
 
-yaml_parser::yaml_parser() noexcept {
-	yaml_parser_initialize(this);
-}
-
-yaml_parser::yaml_parser(const yaml_parser & other) : input_buffer(other.input_buffer), input_file(other.input_file) {
-	yaml_parser_initialize(this);
-}
-
-yaml_parser::yaml_parser(yaml_parser && other) : input_buffer(move(other.input_buffer)), input_file(move(other.input_file)) {
-	yaml_parser_initialize(this);
+yaml_parser::yaml_parser() : parser(new yaml_parser_t, yaml_parser_delete) {
+	yaml_parser_initialize(parser.get());
 }
 
 yaml_parser::~yaml_parser() noexcept {
-	yaml_parser_delete(this);
 	if(input_buffer)
 		fill(input_buffer->begin(), input_buffer->end(), 0);
 }
@@ -66,7 +57,7 @@ void yaml_parser::read_from_file(const string & path) {
 	if(!input_file)
 		throw ios_base::failure("Cannot open \"" + path + "\" for reading");
 
-	yaml_parser_set_input_file(this, input_file.get());
+	yaml_parser_set_input_file(parser.get(), input_file.get());
 }
 
 void yaml_parser::read_from_data(const string & data) {
@@ -77,9 +68,17 @@ void yaml_parser::read_from_data(const string & data) {
 		input_buffer = make_optional(buffer_t(data.begin(), data.end()));
 	else
 		input_buffer->assign(data.begin(), data.end());
-	yaml_parser_set_input_string(this, input_buffer->c_str(), input_buffer->size());
+	yaml_parser_set_input_string(parser.get(), input_buffer->c_str(), input_buffer->size());
 }
 
 bool yaml_parser::has_input() const {
 	return input_file || input_buffer;
+}
+
+yaml_parser::operator yaml_parser_t *() {
+	return parser.get();
+}
+
+yaml_parser::operator const yaml_parser_t *() const {
+	return parser.get();
 }
