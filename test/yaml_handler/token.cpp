@@ -33,6 +33,14 @@ using namespace bandit;
 using namespace libyaml;
 
 
+#define MAKE_PREFILLED_TOKEN_BASE(name, fillwith, token_value) \
+	yaml_token_t name;                                           \
+	memset(&name, 'A', sizeof(name));                            \
+	name.type = token_value
+
+#define MAKE_PREFILLED_TOKEN(token_value) MAKE_PREFILLED_TOKEN_BASE(token, 'A', token_value)
+
+
 bool operator==(const yaml_token_t & lhs, const yaml_token_t & rhs) {
 	return equal(static_cast<const char *>(static_cast<const void *>(&lhs)), static_cast<const char *>(static_cast<const void *>(&lhs)) + sizeof(lhs),
 	             static_cast<const char *>(static_cast<const void *>(&rhs)), static_cast<const char *>(static_cast<const void *>(&rhs)) + sizeof(rhs));
@@ -44,11 +52,14 @@ go_bandit([&] {
 		const yaml_token_t zeroed_token{};
 
 		it("deletes tokens", [&] {
-			yaml_token_t token;
-			memset(&token, 'A', sizeof(token));
-			token.type = YAML_TAG_DIRECTIVE_TOKEN;  // doesn't need deletion, so no UB
-
+			MAKE_PREFILLED_TOKEN(YAML_TAG_DIRECTIVE_TOKEN);  // doesn't need deletion, so no UB
 			AssertThat(yaml_handler::delete_token(token), Is().EqualTo(YAML_TAG_DIRECTIVE_TOKEN));
+			AssertThat(token, Is().EqualTo(zeroed_token));
+		});
+
+		it("deletes tokens after forwarding", [&] {
+			MAKE_PREFILLED_TOKEN(YAML_STREAM_END_TOKEN);  // no associated data
+			AssertThat(yaml_handler().handle(token), Is().EqualTo(YAML_STREAM_END_TOKEN));
 			AssertThat(token, Is().EqualTo(zeroed_token));
 		});
 	});

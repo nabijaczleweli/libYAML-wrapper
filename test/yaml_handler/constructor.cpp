@@ -22,6 +22,7 @@
 
 
 #include "bandit/bandit.h"
+#include "../util/throw.hpp"
 #define private public
 #include <yaml_handler.hpp>
 #undef private
@@ -104,8 +105,11 @@ go_bandit([&] {
 
 			it("moves everything", [&] {
 				MAKE_FULL_HANDLER(handler0);
-				yaml_handler handler1(move(handler0));
-				ASSERT_ALL_TOKEN_HANDLERS(handler1, NONNULL_);
+				AssertNothrow(yaml_handler(move(handler0)).~yaml_handler());
+
+				MAKE_FULL_HANDLER(handler1);
+				yaml_handler handler2(move(handler1));
+				ASSERT_ALL_TOKEN_HANDLERS(handler2, NONNULL_);
 			});
 		});
 

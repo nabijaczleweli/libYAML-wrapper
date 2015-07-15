@@ -47,15 +47,15 @@ using namespace libyaml;
 go_bandit([&] {
 	describe("handler", [&] {
 		describe("token handling", [&] {
-			IT_FORWARDS_TOKEN(NO, no, "no");
+			IT_FORWARDS_TOKEN(NO, no, "lack of token");
 			IT_FORWARDS_TOKEN_ARG(STREAM_START, stream_start, "stream start");
 			IT_FORWARDS_TOKEN(STREAM_END, stream_end, "stream end");
 			IT_FORWARDS_TOKEN_ARG(VERSION_DIRECTIVE, version_directive, "version directive");
 			IT_FORWARDS_TOKEN_ARG(TAG_DIRECTIVE, tag_directive, "tag directive");
 			IT_FORWARDS_TOKEN(DOCUMENT_START, document_start, "document start");
 			IT_FORWARDS_TOKEN(DOCUMENT_END, document_end, "document end");
-			IT_FORWARDS_TOKEN(BLOCK_SEQUENCE_START, block_sequence_start, "block_sequence start");
-			IT_FORWARDS_TOKEN(BLOCK_MAPPING_START, block_mapping_start, "block_mapping start");
+			IT_FORWARDS_TOKEN(BLOCK_SEQUENCE_START, block_sequence_start, "block sequence start");
+			IT_FORWARDS_TOKEN(BLOCK_MAPPING_START, block_mapping_start, "block mapping start");
 			IT_FORWARDS_TOKEN(BLOCK_END, block_end, "block end");
 			IT_FORWARDS_TOKEN(FLOW_SEQUENCE_START, flow_sequence_start, "flow sequence start");
 			IT_FORWARDS_TOKEN(FLOW_SEQUENCE_END, flow_sequence_end, "flow sequence end");
