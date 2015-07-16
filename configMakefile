@@ -59,3 +59,10 @@ OUTDIR := out/
 OBJDIR := $(OUTDIR)obj/
 SRCDIR := src/
 TSTDIR := test/
+RLSDIR := release/
+
+ifeq "$(TRAVIS_OS_NAME)" ""
+	SYSTEM = $(OS)
+else
+	SYSTEM = $(TRAVIS_OS_NAME)
+endif

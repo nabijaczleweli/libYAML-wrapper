@@ -28,7 +28,7 @@ LIBYAML_SOURCES := $(sort $(shell $(FIND) libyaml/$(SRCDIR) -name *.c))
 TEST_SOURCES := $(filter-out $(TSTDIR)test.cpp,$(sort $(shell $(FIND) $(TSTDIR) -name *.cpp)))
 
 
-.PHONY : all test clean git
+.PHONY : all test pack-release clean git
 
 
 all : $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(SOURCES)
@@ -36,10 +36,19 @@ all : $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(SOURCES)
 test : $(TSTDIR)test$(EXE)
 	@cp $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(dir $^) || :
 	cd $(TSTDIR) && $(EXPORT) LD_LIBRARY_PATH=. && ./test$(EXE) --reporter=spec
-	@rm $(TSTDIR)/*$(DLL)
+	@rm $(TSTDIR)*$(DLL)
+
+pack-release : all
+	mkdir $(RLSDIR) $(RLSDIR)include || :
+	cp -r $(SRCDIR)* $(RLSDIR)include
+	cp -r $(OUTDIR)*$(DLL) $(RLSDIR)
+	rm -rf `$(FIND) $(RLSDIR)include -name *.cpp`
+	@rm -f $(RLSDIR)release_*.tbz2
+	tar -jcf "release_$(SYSTEM)_`echo clang++-3.7 | sed s/-.*//g`.tbz2" $(subst /,,$(RLSDIR))
+	mv release_*.tbz2 $(RLSDIR)
 
 clean :
-	rm -rf $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE) $(TSTDIR)*$(OBJ)
+	rm -rf $(RLSDIR) $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE) $(TSTDIR)*$(OBJ)
 
 git :
 	git submodule update --recursive --init --remote
