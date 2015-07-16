@@ -19,7 +19,7 @@ before_deploy:
 deploy:
   provider: releases
   api-key:
-    secure: T40df2pQsgo3oAmQxVqrz28g0nXVeTLlTnk7p5jrIwxcX8myRGe4C6OuE7qzECl7BAS6zRr/t8Gv7ytZQyZ0occHZctfybV7m+PXISavTpjwtVqjjYo0N9DT1lD3p5awDqnaPfRt657J0nvSp1gXThgdC5l1zrrnRK/L0HY43co=
+    secure: Kcl45kpp9AonX2u8o5DDkKZklG9Guv6LBEhgCKncycSySwCz82QiBgzBaZCZfuVbFQVcmZGTdwJVRxGdOq2Upi8vdHKnTzzLGtdx/rk2wxUXIfBP33PdejpdV5A+6tR4+vrC+/Rys6clkNHWBwgou3gmcHAo+bEsYC5A7poH0M4=
   file: "release/release_$TRAVIS_OS_NAME_$COMPILER_NAME.tbz2"
   skip_cleanup: true
   on:
