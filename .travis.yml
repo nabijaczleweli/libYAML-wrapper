@@ -1,0 +1,33 @@
+sudo: false
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX=g++-5 CC=gcc-5; fi
+
+before_deploy:
+  - make pack-release
+
+deploy:
+  provider: releases
+  api-key:
+    secure: T40df2pQsgo3oAmQxVqrz28g0nXVeTLlTnk7p5jrIwxcX8myRGe4C6OuE7qzECl7BAS6zRr/t8Gv7ytZQyZ0occHZctfybV7m+PXISavTpjwtVqjjYo0N9DT1lD3p5awDqnaPfRt657J0nvSp1gXThgdC5l1zrrnRK/L0HY43co=
+  file: "release-temp/release.tbz2"
+  skip_cleanup: true
+  on:
+    tags: true
+
+script:
+  - make clean git && make all test
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-5
+      - g++-5
+#    - clang
