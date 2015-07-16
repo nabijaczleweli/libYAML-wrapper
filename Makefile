@@ -35,7 +35,7 @@ all : $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(SOURCES)
 
 test : $(TSTDIR)test$(EXE)
 	@cp $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) $(dir $^) || :
-	cd $(TSTDIR) && ./test$(EXE) --reporter=spec
+	cd $(TSTDIR) && $(EXPORT) LD_LIBRARY_PATH=. && ./test$(EXE) --reporter=spec
 	@rm $(TSTDIR)/*$(DLL)
 
 clean :
