@@ -35,13 +35,13 @@ using namespace libyaml;
 #define COPIES_FROM_CONTAINER(container)                          \
 	"copies handlers from " #container, [&] {                       \
 		container<yaml_handler> handlers;                             \
-		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(0));     \
+		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(0u));     \
                                                                   \
 		handlers.emplace_back();                                      \
-		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(1)); \
+		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(1u)); \
                                                                   \
 		handlers.emplace_back(empty_handler);                         \
-		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(2)); \
+		AssertThat(yaml_reader(handlers).handlers(), Is().EqualTo(2u)); \
 	}
 
 
@@ -51,35 +51,35 @@ go_bandit([] {
 
 		describe("constructors", [&] {
 			it("is empty by default", [&] {
-				AssertThat(yaml_reader().handlers(), Is().EqualTo(0));
+				AssertThat(yaml_reader().handlers(), Is().EqualTo(0u));
 				AssertThat(yaml_reader().has_input(), Is().EqualTo(false));
 			});
 
 			it("copies handlers from init-list", [&] {
-				AssertThat(yaml_reader({}).handlers(), Is().EqualTo(0));
-				AssertThat(yaml_reader({yaml_handler()}).handlers(), Is().EqualTo(1));
-				AssertThat(yaml_reader({empty_handler, yaml_handler()}).handlers(), Is().EqualTo(2));
+				AssertThat(yaml_reader({}).handlers(), Is().EqualTo(0u));
+				AssertThat(yaml_reader({yaml_handler()}).handlers(), Is().EqualTo(1u));
+				AssertThat(yaml_reader({empty_handler, yaml_handler()}).handlers(), Is().EqualTo(2u));
 			});
 
 			it(COPIES_FROM_CONTAINER(vector));
 			it(COPIES_FROM_CONTAINER(list));
 
 			it("moves", [&] {
-				AssertThat(yaml_reader(yaml_reader({})).handlers(), Is().EqualTo(0));
-				AssertThat(yaml_reader(yaml_reader({empty_handler})).handlers(), Is().EqualTo(1));
-				AssertThat(yaml_reader(yaml_reader({empty_handler, empty_handler})).handlers(), Is().EqualTo(2));
+				AssertThat(yaml_reader(yaml_reader({})).handlers(), Is().EqualTo(0u));
+				AssertThat(yaml_reader(yaml_reader({empty_handler})).handlers(), Is().EqualTo(1u));
+				AssertThat(yaml_reader(yaml_reader({empty_handler, empty_handler})).handlers(), Is().EqualTo(2u));
 			});
 		});
 
 		it("appends handlers", [&] {
 			yaml_reader reader;
-			AssertThat(reader.handlers(), Is().EqualTo(0));
+			AssertThat(reader.handlers(), Is().EqualTo(0u));
 
 			reader.append_handler(empty_handler);
-			AssertThat(reader.handlers(), Is().EqualTo(1));
+			AssertThat(reader.handlers(), Is().EqualTo(1u));
 
 			reader.append_handler(yaml_handler());
-			AssertThat(reader.handlers(), Is().EqualTo(2));
+			AssertThat(reader.handlers(), Is().EqualTo(2u));
 		});
 	});
 });

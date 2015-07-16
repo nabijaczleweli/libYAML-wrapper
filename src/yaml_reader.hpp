@@ -64,7 +64,7 @@ namespace libyaml {
 
 		bool has_input() const;
 
-		auto handlers() -> decltype(all_handlers.size()) const;
+		auto handlers() const -> decltype(all_handlers.size());
 		void append_handler(libyaml::util::all_reference_wrapper<yaml_handler> ref);
 	};
 }

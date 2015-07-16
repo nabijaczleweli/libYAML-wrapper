@@ -23,9 +23,7 @@
 
 #include "bandit/bandit.h"
 #include "../util/throw.hpp"
-#define private public
 #include <yaml_handler.hpp>
-#undef private
 #include <utility>
 
 
