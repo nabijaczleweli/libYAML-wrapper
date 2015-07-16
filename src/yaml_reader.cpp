@@ -82,7 +82,7 @@ bool yaml_reader::has_input() const {
 	return parser.has_input();
 }
 
-auto yaml_reader::handlers() -> decltype(all_handlers.size()) const {
+auto yaml_reader::handlers() const -> decltype(all_handlers.size()) {
 	return all_handlers.size();
 }
 
