@@ -23,9 +23,7 @@
 
 #include "bandit/bandit.h"
 #include "../util/throw.hpp"
-#define private public
 #include <yaml_parser.hpp>
-#undef private
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -39,14 +37,10 @@ using namespace libyaml;
 
 go_bandit([] {
 	describe("parser", [&] {
-		const decltype(declval<yaml_parser>().input_file) no_file;
-
 		describe("read()", [&] {
 			it("throws on nonexistant file", [&] {
 				yaml_parser parser;
 				AssertThrows(ios_base::failure, parser.read_from_file(tmpnam(nullptr)));
-				AssertThat(parser.input_buffer, Is().EqualTo(nullopt));
-				AssertThat(parser.input_file, Is().EqualTo(no_file));
 				AssertThat(parser.has_input(), Is().EqualTo(false));
 			});
 
@@ -55,8 +49,6 @@ go_bandit([] {
 				ofstream{name};
 				yaml_parser parser;
 				AssertNothrow(parser.read_from_file(name));
-				AssertThat(parser.input_buffer, Is().EqualTo(nullopt));
-				AssertThat(parser.input_file, Is().Not().EqualTo(no_file));
 				AssertThat(parser.has_input(), Is().EqualTo(true));
 				remove(name);
 			});
@@ -64,18 +56,12 @@ go_bandit([] {
 			it("opens data of length 0", [&] {
 				yaml_parser parser;
 				parser.read_from_data("");
-				AssertThat(parser.input_buffer, Is().Not().EqualTo(nullopt));
-				AssertThat(*parser.input_buffer, Is().EqualToContainer(""s));
-				AssertThat(parser.input_file, Is().EqualTo(no_file));
 				AssertThat(parser.has_input(), Is().EqualTo(true));
 			});
 
 			it("opens arbitrary data", [&] {
 				yaml_parser parser;
 				parser.read_from_data("Sample data");
-				AssertThat(parser.input_buffer, Is().Not().EqualTo(nullopt));
-				AssertThat(*parser.input_buffer, Is().EqualToContainer("Sample data"s));
-				AssertThat(parser.input_file, Is().EqualTo(no_file));
 				AssertThat(parser.has_input(), Is().EqualTo(true));
 			});
 

@@ -23,9 +23,7 @@
 
 #include "bandit/bandit.h"
 #include "../util/throw.hpp"
-#define private public
 #include <yaml_parser.hpp>
-#undef private
 
 
 using namespace std;
@@ -36,8 +34,6 @@ using namespace libyaml;
 
 go_bandit([] {
 	describe("parser", [&] {
-		const decltype(declval<yaml_parser>().input_file) no_file;
-
 		describe("constructors", [&] {
 			describe("default", [&] {
 				it("doesn't throw", [&] {
@@ -45,8 +41,6 @@ go_bandit([] {
 				});
 
 				it("is empty", [&] {
-					AssertThat(yaml_parser().input_buffer, Is().EqualTo(nullopt));
-					AssertThat(yaml_parser().input_file, Is().EqualTo(no_file));
 					AssertThat(yaml_parser().has_input(), Is().EqualTo(false));
 				});
 			});
@@ -57,8 +51,6 @@ go_bandit([] {
 				});
 
 				it("is empty", [&] {
-					AssertThat(yaml_parser(yaml_parser()).input_buffer, Is().EqualTo(nullopt));
-					AssertThat(yaml_parser(yaml_parser()).input_file, Is().EqualTo(no_file));
 					AssertThat(yaml_parser(yaml_parser()).has_input(), Is().EqualTo(false));
 				});
 			});
