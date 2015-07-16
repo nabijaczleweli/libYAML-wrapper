@@ -47,7 +47,7 @@ using namespace libyaml;
 	}
 
 
-go_bandit([&] {
+go_bandit([] {
 	describe("reader", [&] {
 		yaml_handler empty_handler;
 

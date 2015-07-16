@@ -89,7 +89,7 @@ using namespace libyaml;
 	(name).do_on_scalar_token = [&](const auto &) {}
 
 
-go_bandit([&] {
+go_bandit([] {
 	describe("handler", [&] {
 		describe("constructors", [&] {
 			it("default-constructs emptily", [&] {

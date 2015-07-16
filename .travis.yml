@@ -7,6 +7,12 @@ compiler:
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX=g++-5 CC=gcc-5; fi
+  - apt-cache search clang
+  - if [ "$CXX" = "clang++" ]; then clang++ --version; fi
+  - if [ "$CXX" = "clang++" ]; then clang --version; fi
+  - if [ "$CXX" = "clang++" ]; then clang++-3.7 --version; fi
+  - if [ "$CXX" = "clang++" ]; then clang-3.7 --version; fi
+  - if [ "$CXX" = "clang++" ]; then export CXX=clang++-3.7 CC=clang-3.7; fi
 
 before_deploy:
   - make pack-release
@@ -27,7 +33,8 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise
     packages:
       - gcc-5
       - g++-5
-#    - clang
+      - clang-3.7

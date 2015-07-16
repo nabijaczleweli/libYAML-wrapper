@@ -44,7 +44,7 @@ using namespace libyaml;
 #define IT_FORWARDS_TOKEN(token_upper, token_lower, token_name) IT_FORWARDS_TOKEN_BASE(token_upper, token_lower, token_name, )
 #define IT_FORWARDS_TOKEN_ARG(token_upper, token_lower, token_name) IT_FORWARDS_TOKEN_BASE(token_upper, token_lower, token_name, const auto &)
 
-go_bandit([&] {
+go_bandit([] {
 	describe("handler", [&] {
 		describe("token handling", [&] {
 			IT_FORWARDS_TOKEN(NO, no, "lack of token");

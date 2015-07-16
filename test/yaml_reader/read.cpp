@@ -63,7 +63,7 @@ public:
 	}
 };
 
-go_bandit([&] {
+go_bandit([] {
 	describe("reader", [&] {
 		describe("read()", [&] {
 			it("doesn't throw", [&] {
