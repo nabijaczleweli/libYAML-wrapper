@@ -37,7 +37,7 @@ using namespace bandit;
 using namespace libyaml;
 
 
-go_bandit([&] {
+go_bandit([] {
 	describe("parser", [&] {
 		const decltype(declval<yaml_parser>().input_file) no_file;
 
