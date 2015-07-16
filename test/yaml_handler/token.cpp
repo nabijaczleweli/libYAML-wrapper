@@ -22,9 +22,7 @@
 
 
 #include "bandit/bandit.h"
-#define private public
 #include <yaml_handler.hpp>
-#undef private
 #include <algorithm>
 
 

@@ -23,9 +23,7 @@
 
 #include "bandit/bandit.h"
 #include "../util/throw.hpp"
-#define private public  // Hack into yaml_reader::handlers
 #include <yaml_reader.hpp>
-#undef private
 #include <memory>
 #include <iterator>
 #include <algorithm>
