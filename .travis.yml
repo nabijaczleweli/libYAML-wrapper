@@ -20,13 +20,14 @@ deploy:
   provider: releases
   api-key:
     secure: Kcl45kpp9AonX2u8o5DDkKZklG9Guv6LBEhgCKncycSySwCz82QiBgzBaZCZfuVbFQVcmZGTdwJVRxGdOq2Upi8vdHKnTzzLGtdx/rk2wxUXIfBP33PdejpdV5A+6tR4+vrC+/Rys6clkNHWBwgou3gmcHAo+bEsYC5A7poH0M4=
-  file: "release/release_$TRAVIS_OS_NAME_$COMPILER_NAME.tbz2"
+  file: "release_$TRAVIS_OS_NAME_$COMPILER_NAME.tar.bz2"
   skip_cleanup: true
   on:
     tags: true
 
 script:
-  - make clean git && make all test
+  - make clean git
+  - make all test
 
 addons:
   apt:
