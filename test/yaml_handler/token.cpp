@@ -22,9 +22,7 @@
 
 
 #include "bandit/bandit.h"
-#define private public
 #include <yaml_handler.hpp>
-#undef private
 #include <algorithm>
 
 
@@ -47,18 +45,18 @@ bool operator==(const yaml_token_t & lhs, const yaml_token_t & rhs) {
 }
 
 
-go_bandit([&] {
+go_bandit([] {
 	describe("handler", [&] {
 		const yaml_token_t zeroed_token{};
 
 		it("deletes tokens", [&] {
-			MAKE_PREFILLED_TOKEN(YAML_TAG_DIRECTIVE_TOKEN);  // doesn't need deletion, so no UB
-			AssertThat(yaml_handler::delete_token(token), Is().EqualTo(YAML_TAG_DIRECTIVE_TOKEN));
+			MAKE_PREFILLED_TOKEN(YAML_STREAM_END_TOKEN);  // doesn't need deletion, so no UB
+			AssertThat(yaml_handler::delete_token(token), Is().EqualTo(YAML_STREAM_END_TOKEN));
 			AssertThat(token, Is().EqualTo(zeroed_token));
 		});
 
 		it("deletes tokens after forwarding", [&] {
-			MAKE_PREFILLED_TOKEN(YAML_STREAM_END_TOKEN);  // no associated data
+			MAKE_PREFILLED_TOKEN(YAML_STREAM_END_TOKEN);
 			AssertThat(yaml_handler().handle(token), Is().EqualTo(YAML_STREAM_END_TOKEN));
 			AssertThat(token, Is().EqualTo(zeroed_token));
 		});

@@ -23,9 +23,7 @@
 
 #include "bandit/bandit.h"
 #include "../util/throw.hpp"
-#define private public
 #include <yaml_handler.hpp>
-#undef private
 #include <utility>
 
 
@@ -89,7 +87,7 @@ using namespace libyaml;
 	(name).do_on_scalar_token = [&](const auto &) {}
 
 
-go_bandit([&] {
+go_bandit([] {
 	describe("handler", [&] {
 		describe("constructors", [&] {
 			it("default-constructs emptily", [&] {

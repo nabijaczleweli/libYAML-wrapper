@@ -43,7 +43,7 @@ namespace libyaml {
 	class yaml_reader {
 	private:
 		yaml_parser parser;
-		std::vector<std::shared_ptr<yaml_handler>> handlers;
+		std::vector<std::shared_ptr<yaml_handler>> all_handlers;
 
 	public:
 		static std::experimental::optional<unsigned int> consecutive_notoken_threshold;
@@ -62,6 +62,9 @@ namespace libyaml {
 		void read();
 		void read(const std::string & from);
 
+		bool has_input() const;
+
+		auto handlers() const -> decltype(all_handlers.size());
 		void append_handler(libyaml::util::all_reference_wrapper<yaml_handler> ref);
 	};
 }
@@ -73,16 +76,16 @@ inline libyaml::yaml_reader::~yaml_reader() = default;
 inline libyaml::yaml_reader & libyaml::yaml_reader::operator=(yaml_reader &&) = default;
 
 inline libyaml::yaml_reader::yaml_reader(std::initializer_list<libyaml::util::all_reference_wrapper<yaml_handler>> lst) {
-	handlers.reserve(lst.size());
+	all_handlers.reserve(lst.size());
 	for(const auto & handler : lst)
-		handlers.emplace_back(handler.get().clone());
+		all_handlers.emplace_back(handler.get().clone());
 }
 
 template <class T>
 inline libyaml::yaml_reader::yaml_reader(const T & cont) {
-	handlers.reserve(cont.size());
+	all_handlers.reserve(cont.size());
 	for(const auto & handler : cont)
-		handlers.emplace_back(handler.clone());
+		all_handlers.emplace_back(handler.clone());
 }
 
 

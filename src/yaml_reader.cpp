@@ -54,7 +54,7 @@ void yaml_reader::read() {
 		yaml_parser_scan(parser, &token);
 		auto type = token.type;
 
-		for(const auto & handler : handlers)
+		for(const auto & handler : all_handlers)
 			try {
 				type = handler->handle(token, false);
 			} catch(...) {
@@ -78,6 +78,14 @@ void yaml_reader::read(const string & from) {
 	read();
 }
 
+bool yaml_reader::has_input() const {
+	return parser.has_input();
+}
+
+auto yaml_reader::handlers() const -> decltype(all_handlers.size()) {
+	return all_handlers.size();
+}
+
 void yaml_reader::append_handler(all_reference_wrapper<yaml_handler> ref) {
-	handlers.emplace_back(ref.get().clone());
+	all_handlers.emplace_back(ref.get().clone());
 }

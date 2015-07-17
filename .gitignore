@@ -26,13 +26,15 @@
 *.exe
 *.out
 *.app
-+
-+# Miscellaneous
-+.DS_Store
+
+# Miscellaneous
+.DS_Store
 *.s*-toks
 *.s*-workspace
 out/*
 catch/*
+release/*
+release_*.tar.bz2
 # Test dir
 *.exe
 *.out
