@@ -34,6 +34,7 @@
 out/*
 catch/*
 release/*
+release_*.tar.bz2
 # Test dir
 *.exe
 *.out

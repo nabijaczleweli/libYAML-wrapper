@@ -44,8 +44,7 @@ pack-release : all
 	cp -r $(OUTDIR)*$(DLL) $(RLSDIR)
 	rm -rf `$(FIND) $(RLSDIR)include -name *.cpp`
 	@rm -f $(RLSDIR)release_*.tbz2
-	tar -jcf "release_$(SYSTEM)_`echo clang++-3.7 | sed s/-.*//g`.tbz2" $(subst /,,$(RLSDIR))
-	mv release_*.tbz2 $(RLSDIR)
+	tar -cjvf "release_$(shell echo $(CC) | sed s/-.*//g).tar.bz2" $(RLSDIR)
 
 clean :
 	rm -rf $(RLSDIR) $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE) $(TSTDIR)*$(OBJ)
