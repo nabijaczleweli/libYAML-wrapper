@@ -21,39 +21,28 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#pragma once
-#ifndef UTIL_FILE_HPP
-#define UTIL_FILE_HPP
+#include "bandit/bandit.h"
+#include <util/file.hpp>
+#include <fstream>
+#include <cstdio>
 
 
-#include <type_traits>
+using namespace std;
+using namespace bandit;
+using namespace libyaml::util;
 
 
-namespace libyaml {
-	namespace util {
-		template <class NameT, class = std::enable_if_t<std::is_class<NameT>::value>>
-		bool exists(const NameT & name) noexcept(noexcept(name.data()));
-		bool exists(const char * name) noexcept;
-	}
-}
+go_bandit([] {
+	describe("file util", [&] {
+		it("correctly returns for nonexistant file", [&] {
+			AssertThat(exists(tmpnam(nullptr)), Is().EqualTo(false));
+		});
 
-
-template <class NameT, class>
-bool libyaml::util::exists(const NameT & name) noexcept(noexcept(name.data())) {
-	if(FILE * file = fopen(name.data(), "r")) {
-		fclose(file);
-		return true;
-	} else
-		return false;
-}
-
-bool libyaml::util::exists(const char * name) noexcept {
-	if(FILE * file = fopen(name, "r")) {
-		fclose(file);
-		return true;
-	} else
-		return false;
-}
-
-
-#endif  // UTIL_FILE_HPP
+		it("correctly returns for existing file", [&] {
+			const auto name = tmpnam(nullptr);
+			ofstream{name};
+			AssertThat(exists(name), Is().EqualTo(true));
+			remove(name);
+		});
+	});
+});

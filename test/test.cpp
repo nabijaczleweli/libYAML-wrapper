@@ -22,7 +22,7 @@
 
 
 #include "bandit/bandit.h"
-#include "util/throw.hpp"
+#include "testutil/throw.hpp"
 
 
 libyaml_test::not_thrown_t libyaml_test::not_thrown;

@@ -22,7 +22,7 @@
 
 
 #include "bandit/bandit.h"
-#include "../util/throw.hpp"
+#include "../testutil/throw.hpp"
 #include <yaml_parser.hpp>
 #include <cstdio>
 #include <fstream>
