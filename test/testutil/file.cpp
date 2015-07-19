@@ -21,37 +21,22 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "bandit/bandit.h"
-#include "../testutil/file.hpp"
-#include <util/file.hpp>
-#include <fstream>
+#include "file.hpp"
+#include <cstdio>
+#include <algorithm>
 
 
 using namespace std;
-using namespace bandit;
-using namespace libyaml::util;
 
 
-go_bandit([] {
-	describe("file util", [&] {
-		string fname;
-		before_each([&] {
-			fname = libyaml_test::tempname();
-			fclose(fopen(fname.c_str(), "w"));
-		});
+static mt19937 rng;
+static uniform_int_distribution<short int> dist('A', 'Z');
 
-		after_each([&] {
-			if(!fname.empty())
-				remove(fname.c_str());
-			fname.clear();
-		});
 
-		it("correctly returns for nonexistant file", [&] {
-			AssertThat(exists(libyaml_test::tempname()), Is().EqualTo(false));  //
-		});
-
-		it("correctly returns for existing file", [&] {
-			AssertThat(exists(fname), Is().EqualTo(true));  //
-		});
-	});
-});
+//This is here to fix a bug(?) in GCC 5.1 where `tmpnam`s start with '/' causing files in possibly protected areas
+string libyaml_test::tempname() {
+	string name = tmpnam(nullptr);
+	replace(begin(name), end(name), '\\', static_cast<char>(dist(rng)));
+	replace(begin(name), end(name), '/', static_cast<char>(dist(rng)));
+	return name;
+}

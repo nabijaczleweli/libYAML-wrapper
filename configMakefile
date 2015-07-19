@@ -55,8 +55,9 @@ CCAR := $(CAR) -std=c11 -DYAML_DECLARE_STATIC -DYAML_VERSION_STRING=\"0.1.6\" -D
 STRIP := strip
 STRIPAR := --strip-all --remove-section=.comment --remove-section=.note
 
+OBJSUF := obj/
 OUTDIR := out/
-OBJDIR := $(OUTDIR)obj/
+OBJDIR := $(OUTDIR)$(OBJSUF)
 SRCDIR := src/
 TSTDIR := test/
 RLSDIR := release/

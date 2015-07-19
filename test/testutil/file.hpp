@@ -21,37 +21,17 @@
 //  DEALINGS IN THE SOFTWARE.
 
 
-#include "bandit/bandit.h"
-#include "../testutil/file.hpp"
-#include <util/file.hpp>
-#include <fstream>
+#pragma once
+#ifndef TESTUTIL_FILE_HPP
+#define TESTUTIL_FILE_HPP
 
 
-using namespace std;
-using namespace bandit;
-using namespace libyaml::util;
+#include <string>
 
 
-go_bandit([] {
-	describe("file util", [&] {
-		string fname;
-		before_each([&] {
-			fname = libyaml_test::tempname();
-			fclose(fopen(fname.c_str(), "w"));
-		});
+namespace libyaml_test {
+	std::string tempname();
+}
 
-		after_each([&] {
-			if(!fname.empty())
-				remove(fname.c_str());
-			fname.clear();
-		});
 
-		it("correctly returns for nonexistant file", [&] {
-			AssertThat(exists(libyaml_test::tempname()), Is().EqualTo(false));  //
-		});
-
-		it("correctly returns for existing file", [&] {
-			AssertThat(exists(fname), Is().EqualTo(true));  //
-		});
-	});
-});
+#endif  // TESTUTIL_FILE_HPP

@@ -23,10 +23,9 @@
 
 #include "bandit/bandit.h"
 #include "../testutil/throw.hpp"
+#include "../testutil/file.hpp"
 #include <yaml_parser.hpp>
-#include <cstdio>
 #include <fstream>
-#include <iostream>
 
 
 using namespace std;
@@ -38,19 +37,28 @@ using namespace libyaml;
 go_bandit([] {
 	describe("parser", [&] {
 		describe("read()", [&] {
+			string fname;
+			before_each([&] {
+				fname = libyaml_test::tempname();
+				fclose(fopen(fname.c_str(), "w"));
+			});
+
+			after_each([&] {
+				if(!fname.empty())
+					remove(fname.c_str());
+				fname.clear();
+			});
+
 			it("throws on nonexistant file", [&] {
 				yaml_parser parser;
-				AssertThrows(ios_base::failure, parser.read_from_file(tmpnam(nullptr)));
+				AssertThrows(ios_base::failure, parser.read_from_file(libyaml_test::tempname()));
 				AssertThat(parser.has_input(), Is().EqualTo(false));
 			});
 
 			it("opens existing files", [&] {
-				const auto name = tmpnam(nullptr);
-				ofstream{name};
 				yaml_parser parser;
-				AssertNothrow(parser.read_from_file(name));
+				AssertNothrow(parser.read_from_file(fname));
 				AssertThat(parser.has_input(), Is().EqualTo(true));
-				remove(name);
 			});
 
 			it("opens data of length 0", [&] {
@@ -70,17 +78,14 @@ go_bandit([] {
 					yaml_parser parser;
 					parser.read_from_data("Sample data #1");
 					AssertThrows(yaml_parser_exception, parser.read_from_data("Sample data #2"));
-					AssertThrows(yaml_parser_exception, parser.read_from_file(tmpnam(nullptr)));
+					AssertThrows(yaml_parser_exception, parser.read_from_file(libyaml_test::tempname()));
 				});
 
 				it("throws with file already open", [&] {
-					const auto name = tmpnam(nullptr);
-					ofstream{name};
 					yaml_parser parser;
-					parser.read_from_file(name);
+					parser.read_from_file(fname);
 					AssertThrows(yaml_parser_exception, parser.read_from_data("Sample data"));
-					AssertThrows(yaml_parser_exception, parser.read_from_file(tmpnam(nullptr)));
-					remove(name);
+					AssertThrows(yaml_parser_exception, parser.read_from_file(libyaml_test::tempname()));
 				});
 			});
 		});

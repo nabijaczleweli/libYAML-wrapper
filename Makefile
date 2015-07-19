@@ -25,7 +25,7 @@ include configMakefile
 
 SOURCES := $(sort $(shell $(FIND) $(SRCDIR) -name *.cpp))
 LIBYAML_SOURCES := $(sort $(shell $(FIND) libyaml/$(SRCDIR) -name *.c))
-TEST_SOURCES := $(filter-out $(TSTDIR)test.cpp,$(sort $(shell $(FIND) $(TSTDIR) -name *.cpp)))
+TEST_SOURCES := $(sort $(shell $(FIND) $(TSTDIR) -name *.cpp))
 
 
 .PHONY : all test pack-release clean git
@@ -47,7 +47,7 @@ pack-release : all
 	tar -cjvf "release_$(shell echo $(CC) | sed s/-.*//g).tar.bz2" $(RLSDIR)
 
 clean :
-	rm -rf $(RLSDIR) $(OUTDIR) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE) $(TSTDIR)*$(OBJ)
+	rm -rf $(RLSDIR) $(OUTDIR) $(TSTDIR)$(OBJSUF) $(TSTDIR)*$(DLL) $(TSTDIR)*$(EXE)
 
 git :
 	git submodule update --recursive --init --remote
@@ -58,14 +58,14 @@ $(OUTDIR)$(PREDLL)libyaml-wrapper$(DLL) : $(subst $(SRCDIR),$(OBJDIR)libyaml/,$(
 	$(CXX) $(CХХAR) -shared -o$@ $^
 	$(STRIP) $(STRIPAR) $@
 
-$(TSTDIR)test$(EXE) : all $(TSTDIR)test$(OBJ) $(TEST_SOURCES)
+$(TSTDIR)test$(EXE) : all $(subst $(TSTDIR),$(TSTDIR)$(OBJSUF),$(subst .cpp,$(OBJ),$(TEST_SOURCES)))
 	$(CXX) $(CХХAR) -isystemsrc -Ibandit -o$@ -L$(OUTDIR) -llibyaml-wrapper $(filter-out all,$^)
 
 $(OBJDIR)%$(OBJ) : $(SRCDIR)%.cpp
 	@$(MKDIR) -p $(dir $@) || :
 	$(CXX) $(CХХAR) -c -o$@ $^
 
-$(TSTDIR)test$(OBJ) : $(TSTDIR)test.cpp
+$(TSTDIR)$(OBJSUF)%$(OBJ) : $(TSTDIR)%.cpp
 	@$(MKDIR) -p $(dir $@) || :
 	$(CXX) $(CХХAR) -isystemsrc -Ibandit -c -o$@ $^
 

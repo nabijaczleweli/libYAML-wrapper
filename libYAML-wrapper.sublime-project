@@ -23,6 +23,9 @@
 				"*.dll",
 				"*.so",
 				"*.dylib"
+			],
+			"folder_exclude_patterns": [
+				"out"
 			]
 		},
 		{
