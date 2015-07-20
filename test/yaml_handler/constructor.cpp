@@ -101,10 +101,12 @@ go_bandit([] {
 				ASSERT_ALL_TOKEN_HANDLERS(handler1, NONNULL_);
 			});
 
-			it("moves everything", [&] {
+			it("doesn't throw on move", [&] {
 				MAKE_FULL_HANDLER(handler0);
 				AssertNothrow(yaml_handler(move(handler0)).~yaml_handler());
+			});
 
+			it("moves everything", [&] {
 				MAKE_FULL_HANDLER(handler1);
 				yaml_handler handler2(move(handler1));
 				ASSERT_ALL_TOKEN_HANDLERS(handler2, NONNULL_);
