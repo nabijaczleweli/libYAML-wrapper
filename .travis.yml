@@ -25,9 +25,13 @@ deploy:
     tags: true
     repo: nabijaczleweli/libYAML-wrapper
 
+before_script:
+  - make clean
+  - make git
+
 script:
-  - make clean git
-  - make all test
+  - make all
+  - make test
 
 addons:
   apt:
