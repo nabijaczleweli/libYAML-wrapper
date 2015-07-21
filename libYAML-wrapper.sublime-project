@@ -25,7 +25,7 @@
 				"*.dylib"
 			],
 			"folder_exclude_patterns": [
-				"out"
+				"obj"
 			]
 		},
 		{

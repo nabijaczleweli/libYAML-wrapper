@@ -33,7 +33,7 @@ namespace libyaml {
 		template <class T>
 		class all_reference_wrapper {
 		private:
-			T * const val;
+			T * val;
 
 		public:
 			inline all_reference_wrapper(T && t) : val(const_cast<T *>(std::addressof(t))) {}
