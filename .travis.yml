@@ -18,7 +18,7 @@ matrix:
       env: TEST_COVERAGE=true
 
 install:
-  - if [ "$TEST_COVERAGE" = "true" ]; then pip install --user `whoami` cpp-coveralls; fi
+  - git clone https://github.com/jaylyerly/cpp-coveralls.git && cd cpp-coveralls && mkdir -p ./install/lib/python2.7/site-packages && PYTHONPATH=./install/lib/python2.7/site-packages python setup.py install --prefix ./install && cd $TRAVIS_BUILD_DIR
   - export COMPILER_NAME=$CC
   - if [ "$CXX" = "g++" ]; then export CXX=g++-5 CC=gcc-5; fi
   - if [ "$CXX" = "clang++" ]; then export CXX=clang++-3.7 CC=clang-3.7; fi
@@ -44,8 +44,10 @@ script:
   - make test
 
 after_success:
-  - alias python=python2.7
-  - if [ "$TEST_COVERAGE" = "true" ]; then coveralls --root src --build-root out --exclude bandit --exclude libyaml --exclude test --gcov-options '\-lp'; fi
+  - pwd
+  - find
+  - find cpp-coveralls
+  - if [ "$TEST_COVERAGE" = "true" ]; then cpp-coveralls/install/bin/coveralls --verbose --build-root . --exclude bandit --exclude libyaml --exclude test --gcov gcov-5 --gcov-options '\-lp'; fi
 
 addons:
   apt:
@@ -56,4 +58,4 @@ addons:
       - gcc-5
       - g++-5
       - clang-3.7
-      - python2.7
+      - python

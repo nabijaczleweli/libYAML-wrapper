@@ -47,7 +47,7 @@ else
 endif
 
 ifeq "$(TEST_COVERAGE)" "true"
-	COVAR := --coverage
+	COVAR := --coverage -O0 -g
 else
 	COVAR :=
 endif
