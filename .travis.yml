@@ -18,7 +18,7 @@ matrix:
       env: TEST_COVERAGE=true
 
 install:
-  - if [ "$TEST_COVERAGE" ]; then pip install --user `whoami` cpp-coveralls; fi
+  - if [ "$TEST_COVERAGE" = "true" ]; then pip install --user `whoami` cpp-coveralls; fi
   - export COMPILER_NAME=$CC
   - if [ "$CXX" = "g++" ]; then export CXX=g++-5 CC=gcc-5; fi
   - if [ "$CXX" = "clang++" ]; then export CXX=clang++-3.7 CC=clang-3.7; fi
@@ -44,7 +44,7 @@ script:
   - make test
 
 after_success:
-  - if [ "$TEST_COVERAGE" ]; then coveralls --root src --build-root out --exclude bandit --exclude libyaml --exclude test --gcov-options '\-lp'; fi
+  - if [ "$TEST_COVERAGE" = "true" ]; then coveralls --root src --build-root out --exclude bandit --exclude libyaml --exclude test --gcov-options '\-lp'; fi
 
 addons:
   apt:
