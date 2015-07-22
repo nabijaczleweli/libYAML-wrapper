@@ -8,7 +8,20 @@ compiler:
   - gcc
   - clang
 
+env:
+  - TEST_COVERAGE=true
+  - TEST_COVERAGE=false
+
+matrix:
+  exclude:
+    - compiler: clang
+      env: TEST_COVERAGE=true
+    - compiler: gcc
+      env: TEST_COVERAGE=false
+
 install:
+#  - if [ "$TEST_COVERAGE" ]; export PATH=$HOME/.local/bin:$PATH; fi
+  - if [ "$TEST_COVERAGE" ]; then pip install --user `whoami` cpp-coveralls; fi
   - export COMPILER_NAME=$CC
   - if [ "$CXX" = "g++" ]; then export CXX=g++-5 CC=gcc-5; fi
   - if [ "$CXX" = "clang++" ]; then export CXX=clang++-3.7 CC=clang-3.7; fi
@@ -32,6 +45,9 @@ before_script:
 script:
   - make all
   - make test
+
+after_success:
+  - coveralls --root src --build-root out --exclude test --gcov-options '\-lp'
 
 addons:
   apt:
