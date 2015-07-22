@@ -44,6 +44,7 @@ script:
   - make test
 
 after_success:
+  - alias python=python2.7
   - if [ "$TEST_COVERAGE" = "true" ]; then coveralls --root src --build-root out --exclude bandit --exclude libyaml --exclude test --gcov-options '\-lp'; fi
 
 addons:
