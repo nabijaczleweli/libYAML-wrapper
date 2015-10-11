@@ -25,16 +25,14 @@
 #define THROW_HPP
 
 
-#define AssertNothrow(expr)                       \
-	AssertThrows(libyaml_test::not_thrown_t, [&] {  \
-		try {                                         \
-			expr;                                       \
-			throw libyaml_test::not_thrown;             \
-		} catch(const libyaml_test::not_thrown_t &) { \
-			throw;                                      \
-		} catch(...) {                                \
-			throw;                                      \
-		}                                             \
+#define AssertNothrow(expr)                      \
+	AssertThrows(libyaml_test::not_thrown_t, [&] { \
+		try {                                        \
+			expr;                                      \
+			throw libyaml_test::not_thrown;            \
+		} catch(...) {                               \
+			throw;                                     \
+		}                                            \
 	}())
 
 
