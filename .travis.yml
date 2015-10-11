@@ -41,4 +41,4 @@ addons:
     packages:
       - gcc-5
       - g++-5
-      - clang-3.7
+      - clang-3.8
