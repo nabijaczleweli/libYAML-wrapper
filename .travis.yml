@@ -16,12 +16,6 @@ matrix:
             - llvm-toolchain-precise
             - llvm-toolchain-precise-3.7
             - ubuntu-toolchain-r-test
-    - env: _CXX=clang++-3.7 _CC=clang-3.7 COMPILER_NAME=clang-3.7
-      addons:
-        apt:
-          packages:
-            - clang-3.7
-          sources: *sources
     - env: _CXX=clang++-3.8 _CC=clang-3.8 COMPILER_NAME=clang-3.8
       addons:
         apt:
